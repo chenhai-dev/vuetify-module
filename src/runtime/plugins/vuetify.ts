@@ -1,15 +1,15 @@
-import { createVuetify } from 'vuetify'
+import {createVuetify} from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
-import { aliases, mdi } from 'vuetify/iconsets/mdi'
-import {defineNuxtPlugin,useRuntimeConfig} from "#app";
-import type {ThemeDefinition,IconDefinition} from "~/src/runtime/types";
+import { aliases, mdi } from 'vuetify/iconsets/mdi';
+import {defineNuxtPlugin, useRuntimeConfig} from "nuxt/app";
+import type {IconOptions, ModuleOptions} from "../types";
 
 export default defineNuxtPlugin((nuxtApp) => {
     const config = useRuntimeConfig().public
 
     // Build theme configuration
-    const themes: Record<string, ThemeDefinition> = {}
+    const themes: ModuleOptions['themes'] = {}
 
     if (config?.Vuetify?.themes) {
         for (const [name, theme] of Object.entries(config.Vuetify.themes)) {
@@ -24,11 +24,11 @@ export default defineNuxtPlugin((nuxtApp) => {
     }
 
     // Build icon configuration
-    const iconConfig: IconDefinition = {
-        defaultSet: config.Vuetify.icons?.defaultSet || 'mdi',
+    const iconConfig: IconOptions = {
+        defaultSet: config.Vuetify?.icons?.defaultSet || 'mdi',
         aliases: {
             ...aliases,
-            ...(config.Vuetify.icons?.aliases || {}),
+            ...(config.Vuetify?.icons?.aliases || {}),
         },
         sets: {
             mdi,
@@ -41,10 +41,10 @@ export default defineNuxtPlugin((nuxtApp) => {
         components,
         directives,
         theme: {
-            defaultTheme: config.Vuetify.defaultTheme || 'light',
+            defaultTheme: config.Vuetify?.defaultTheme || 'light',
             themes,
         },
-        defaults: config.Vuetify.defaults || {},
+        defaults: config.Vuetify?.defaults || {},
         icons: iconConfig,
     })
 

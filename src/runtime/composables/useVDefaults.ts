@@ -1,6 +1,6 @@
 import { computed, reactive } from 'vue'
 import { useDefaults as useVuetifyDefaults } from 'vuetify'
-import {useRuntimeConfig} from "#app";
+import {useRuntimeConfig} from "nuxt/app";
 
 export interface ComponentDefaults {
     [componentName: string]: Record<string, unknown>

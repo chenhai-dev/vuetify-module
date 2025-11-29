@@ -4,67 +4,34 @@ import {
     addPlugin,
     addTemplate,
     createResolver,
-    defineNuxtModule, extendViteConfig,
+    defineNuxtModule, extendViteConfig, useLogger,
 } from '@nuxt/kit'
 import type {HookResult} from "@nuxt/schema";
+import vuetify, {transformAssetUrls} from 'vite-plugin-vuetify';
 import {defu} from 'defu'
-import type {ModuleOptions, ResolvedConfig,ThemeDefinition} from "./runtime/types";
+import type {ModuleOptions, ThemeDefinition, VuetifyOptions} from "./runtime/types";
 import {generateVuetifyConfig} from "./runtime/utils";
 import type {OutputOptions} from "rollup";
 
-// Declare module augmentation for Nuxt 4
-declare module '@nuxt/schema' {
-    interface NuxtHooks {
-        'nuxt-vuetify:config': (config: ResolvedConfig) => HookResult
-    }
-    interface NuxtConfig {
-        Vuetify?: ModuleOptions
-    }
-
-    interface NuxtOptions {
-        Vuetify?: ModuleOptions
-    }
-
-    interface PublicRuntimeConfig {
-        Vuetify: {
-            defaultTheme: string
-            themes: Record<string, Partial<ThemeDefinition>>
-            defaults: Record<string, Record<string, unknown>>
-            icons: ModuleOptions['icons']
-            ssr: ModuleOptions['ssr']
-            blueprint?: 'md1' | 'md2' | 'md3'
-            labComponents?: boolean
-        }
-    }
-}
-
-declare module '#app' {
-    interface NuxtApp {
-        $vuetify: ReturnType<typeof import('vuetify')['createVuetify']>
-    }
-
-    interface RuntimeNuxtHooks {
-        'nuxt-vuetify:config': (config: ResolvedConfig) => HookResult
-    }
-}
-
 export interface ModuleHooks {
-    'nuxt-vuetify:config': (config: ResolvedConfig) => HookResult
+    'vuetify:config': (config: VuetifyOptions) => HookResult
 }
 
+const CONFIG_KEY = 'vuetify'
+const logger = useLogger(`nuxt:${CONFIG_KEY}`)
 export default defineNuxtModule<ModuleOptions>({
     meta: {
-        name: 'nuxt-vuetify-module',
-        configKey: 'Vuetify',
+        name: 'vuetify-nuxt-module',
+        configKey: CONFIG_KEY,
         compatibility: {
-            // Nuxt 4.2.1+ compatibility
-            nuxt: '>=4.2.1',
+            nuxt: '^3.9.0 || ^4.0.0',
         },
     },
 
-    // Default configuration
+    // Default configuration options of the Nuxt module
     defaults: {
         enabled: true,
+        // Vuetify theme :{defaultTheme:'light',themes:{light:{},dark:{}}}
         defaultTheme: 'light',
         themes: {
             light: {
@@ -96,82 +63,181 @@ export default defineNuxtModule<ModuleOptions>({
                 },
             },
         },
+        // Default Component - Props
         defaults: {
             VBtn: {
-                rounded: 'lg',
+                color: "primary",
+                density: "compact",
+                slim: true,
+                variant: "outlined",
             },
             VCard: {
-                rounded: 'lg',
+                density: "compact",
+                variant: "outlined",
             },
             VTextField: {
-                variant: 'outlined',
+                density: "compact",
+                hideDetails: 'auto',
+                variant: "outlined",
+
+            },
+            VTextarea: {
+                density: "compact",
+                variant: "outlined",
+                hideDetails: 'auto',
+            },
+            VSelect: {
+                density: "compact",
+                variant: "outlined",
+                hideDetails: 'auto',
+            },
+            VAutocomplete: {
+                density: "compact",
+                variant: "outlined",
+                hideDetails: 'auto',
+            },
+            VCombobox: {
+                density: "compact",
+                variant: "outlined",
+                hideDetails: 'auto',
+            },
+            VCheckbox: {
+                color: "primary",
+                density: "compact",
+                variant: "outlined",
+                hideDetails: 'auto',
+            },
+            VRadio: {
+                color: "primary",
+                density: "compact",
+                variant: "outlined",
+                hideDetails: 'auto',
+            },
+            VSwitch: {
+                color: "primary",
+                density: "compact",
+                variant: "outlined",
+                hideDetails: 'auto',
+            },
+            VFileInput: {
+                density: "compact",
+                variant: "outlined",
+                hideDetails: 'auto',
+            },
+            VList: {
+                slim: true,
+            },
+            VListItem: {
+                slim: true,
+            },
+            VTab: {
+                sliderColor: "primary",
+                slim: true,
             },
         },
+        // Lab components
+        labComponents: false,
+        // Icon
         icons: {
             defaultSet: 'mdi',
-            useSvg: false,
         },
-        styles: {
-            disableVuetifyStyles: false,
-        },
+        //SSR
         ssr: {
             clientWidth: 1920,
             clientHeight: 1080,
+        },
+        // Style
+        styles: {
+            disableVuetifyStyles: false,
         },
         performance: {
             treeShaking: true,
             prefetch: false,
         },
-        labComponents: false,
     },
 
     // Setup function
     async setup(options, nuxt) {
         // Skip if disabled
-        if (!options.enabled) return
+        if (!options.enabled) {
+            logger.warn('Module is disabled');
+            return
+        }
 
         const resolver = createResolver(import.meta.url)
 
 
-        // Resolve configuration
-        const resolvedConfig: ResolvedConfig = {
+        // Load configuration
+        const config: VuetifyOptions = {
             defaultTheme: options.defaultTheme || 'light',
             themes: options.themes || {},
             defaults: options.defaults || {},
             icons: options.icons || {},
-            // ssr: options.ssr || {},
-            // blueprint: options.blueprint || 'md3',
-            // labComponents: options.labComponents || false,
         }
 
         // Call custom hook for config modification
         // In Nuxt 4, hooks are called during modules:done
         nuxt.hook('modules:done', async () => {
-            await nuxt.callHook('nuxt-vuetify:config', resolvedConfig)
+            await nuxt.callHook('vuetify:config', config)
         })
 
         // Expose options to runtime config
         nuxt.options.runtimeConfig.public.Vuetify = defu(
             nuxt.options.runtimeConfig.public.Vuetify || {},
             {
-                defaultTheme: resolvedConfig.defaultTheme,
-                themes: resolvedConfig.themes,
-                defaults: resolvedConfig.defaults,
-                icons: resolvedConfig.icons || {},
+                defaultTheme: config.defaultTheme,
+                themes: config.themes,
+                defaults: config.defaults,
+                icons: config.icons || {},
                 ssr: options.ssr || {},
                 blueprint: options.blueprint || 'md3',
                 labComponents: options.labComponents || false
             }
         )
 
+        // 1. Configure Vite plugin
+        if (options.performance?.treeShaking) {
+            nuxt.hooks.hook('vite:extendConfig', (config) => {
+                config.plugins?.push(vuetify({autoImport: true}));
+            });
+        }
+
         // Add Vuetify to transpile
         nuxt.options.build.transpile.push('vuetify')
 
-        // Configure Vite for Vuetify (Nuxt 4 uses Vite by default)
+        // Add Vuetify CSS (unless disabled)
+        if (!options.styles?.disableVuetifyStyles) {
+            nuxt.options.css.push('vuetify/styles')
+        }
 
+        // Add custom SASS config file if provided
+        if (options.styles?.configFile) {
+            extendViteConfig((config) => {
+                // Configure vite-plugin-vuetify for SASS variable customization
+                config.css = config.css || {}
+                config.css.preprocessorOptions = config.css.preprocessorOptions || {}
+                config.css.preprocessorOptions.scss = {
+                    ...config.css.preprocessorOptions.scss,
+                    additionalData: `@use "${options.styles!.configFile}" as *;`,
+                }
+            })
+        }
+
+        // Add icon font CSS if not using SVG
+        if (!options.icons?.useSvg) {
+            nuxt.options.css.push('@mdi/font/css/materialdesignicons.css')
+        }
+
+        if (options.transformAssetUrls) {
+            nuxt.options.vite.vue = nuxt.options.vite.vue || {};
+            nuxt.options.vite.vue.template = nuxt.options.vite.vue.template || {};
+            nuxt.options.vite.vue.template.transformAssetUrls = transformAssetUrls;
+        }
+
+        // Configure Vite for Vuetify (Nuxt 4 uses Vite by default)
         extendViteConfig((config) => {
-            config.optimizeDeps ||= {}
-            config.optimizeDeps.include ||= []
+            config.optimizeDeps = nuxt.options.vite.optimizeDeps || {};
+            config.optimizeDeps.include = nuxt.options.vite.optimizeDeps?.include || [];
             config.optimizeDeps.include.push('vuetify')
 
             // SASS configuration with modern compiler (Nuxt 4 default)
@@ -198,36 +264,13 @@ export default defineNuxtModule<ModuleOptions>({
             }
         })
 
-        // Add Vuetify CSS (unless disabled)
-        if (!options.styles?.disableVuetifyStyles) {
-            nuxt.options.css.push('vuetify/styles')
-        }
-
-        // Add custom SASS config file if provided
-        if (options.styles?.configFile) {
-            extendViteConfig((config) => {
-                // Configure vite-plugin-vuetify for SASS variable customization
-                config.css = config.css || {}
-                config.css.preprocessorOptions = config.css.preprocessorOptions || {}
-                config.css.preprocessorOptions.scss = {
-                    ...config.css.preprocessorOptions.scss,
-                    additionalData: `@use "${options.styles!.configFile}" as *;`,
-                }
-            })
-        }
-
-        // Add icon font CSS if not using SVG
-        if (!options.icons?.useSvg) {
-            nuxt.options.css.push('@mdi/font/css/materialdesignicons.css')
-        }
-
         // Generate Vuetify configuration template
         addTemplate({
             filename: 'vuetify-config.mjs',
             getContents: () => generateVuetifyConfig(
                 options,
-                resolvedConfig.themes as Record<string, Partial<ThemeDefinition>>,
-                resolvedConfig
+                config.themes as Record<string, Partial<ThemeDefinition>>,
+                config
             ),
         })
 
@@ -268,5 +311,37 @@ export default defineNuxtModule<ModuleOptions>({
         }
     },
 })
+
+// Declare module augmentation for Nuxt 4
+declare module '@nuxt/schema' {
+    interface NuxtApp {
+        $vuetify: ReturnType<typeof import('vuetify')['createVuetify']>
+    }
+
+    interface NuxtHooks {
+        'vuetify:config': (config: VuetifyOptions) => HookResult
+    }
+
+    interface NuxtConfig {
+        Vuetify?: ModuleOptions
+    }
+
+    interface NuxtOptions {
+        Vuetify?: ModuleOptions
+    }
+
+
+    interface PublicRuntimeConfig {
+        Vuetify: {
+            defaultTheme: ModuleOptions['defaultTheme']
+            themes: ModuleOptions['themes']
+            defaults: ModuleOptions['defaults']
+            icons: ModuleOptions['icons']
+            ssr: ModuleOptions['ssr']
+            blueprint?: ModuleOptions['blueprint']
+            labComponents?: ModuleOptions['labComponents']
+        }
+    }
+}
 
 

@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import { useTheme } from 'vuetify'
-import { useRuntimeConfig, useCookie } from '#imports'
+import {useCookie, useRuntimeConfig} from "nuxt/app";
 
 export interface UseVThemeOptions {
     /**

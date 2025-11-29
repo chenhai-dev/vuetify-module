@@ -1,14 +1,14 @@
 // Generate Vuetify configuration
-import type {ModuleOptions, ResolvedConfig, ThemeDefinition} from "~/src/runtime/types";
+import type {ModuleOptions,VuetifyOptions} from "../types";
 
 
-export // ----------------------------
+// ----------------------------
 // Config generator (fixed)
 // ----------------------------
-function generateVuetifyConfig(
+export  function generateVuetifyConfig(
     options: ModuleOptions,
-    themes: Record<string, Partial<ThemeDefinition>>,
-    config: ResolvedConfig
+    themes: ModuleOptions['themes'],
+    config: VuetifyOptions
 ): string {
     return `
 // Auto-generated Vuetify configuration for Nuxt 4
