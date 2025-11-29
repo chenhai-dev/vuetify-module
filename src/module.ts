@@ -8,9 +8,9 @@ import {
 } from '@nuxt/kit'
 import type {HookResult} from "@nuxt/schema";
 import {defu} from 'defu'
-import type {ModuleOptions, ResolvedConfig} from "./runtime/types";
+import type {ModuleOptions, ResolvedConfig,ThemeDefinition} from "./runtime/types";
 import {generateVuetifyConfig} from "./runtime/utils";
-import type {ThemeDefinition} from "./runtime/types";
+import type {OutputOptions} from "rollup";
 
 // Declare module augmentation for Nuxt 4
 declare module '@nuxt/schema' {
@@ -125,10 +125,6 @@ export default defineNuxtModule<ModuleOptions>({
         labComponents: false,
     },
 
-    hooks: {
-        'nuxt-vuetify:config': (config: ResolvedConfig) => {}
-    },
-
     // Setup function
     async setup(options, nuxt) {
         // Skip if disabled
@@ -196,7 +192,7 @@ export default defineNuxtModule<ModuleOptions>({
 
             if (!Array.isArray(config.build.rollupOptions.output)) {
                 config.build.rollupOptions.output.manualChunks = {
-                    ...((config.build.rollupOptions.output as any).manualChunks || {}),
+                    ...((config.build.rollupOptions.output as OutputOptions).manualChunks || {}),
                     vuetify: ['vuetify'],
                 }
             }

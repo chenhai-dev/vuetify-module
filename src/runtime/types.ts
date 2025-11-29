@@ -1,6 +1,8 @@
-import type { ThemeDefinition as VuetifyThemeDefinition } from 'vuetify'
+import type {IconAliases, ThemeDefinition as VuetifyThemeDefinition,IconOptions} from 'vuetify'
+
 
 export type ThemeDefinition = VuetifyThemeDefinition
+export type IconDefinition = IconOptions
 
 // Module options interface
 export interface ModuleOptions {
@@ -44,7 +46,8 @@ export interface ModuleOptions {
         /**
          * Custom icon aliases
          */
-        aliases?: Record<string, string>
+        aliases?: Record<string, string> | IconAliases
+
 
         /**
          * Use SVG icons for better performance
@@ -113,7 +116,7 @@ export interface ResolvedConfig {
     defaults: ModuleOptions['defaults']
     icons: {
         defaultSet?: 'mdi' | 'fa' | 'mdi-svg' | string
-        aliases?: Record<string, string>
+        aliases?: Record<string, string>|IconAliases
         useSvg?: boolean
     }
     // ssr: {

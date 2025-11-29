@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { currentTheme, isDark, colors } = useVTheme()
+const { isDark, colors } = useVTheme()
 
 const features = [
   {

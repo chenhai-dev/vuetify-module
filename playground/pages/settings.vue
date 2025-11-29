@@ -1,12 +1,17 @@
 <script setup lang="ts">
-const { 
+import {ref} from "vue";
+import {useVTheme, useVDefaults, definePageMeta} from "../.nuxt/imports";
+definePageMeta({
+  name: "Setting Pages",
+})
+const {
   currentTheme, 
   isDark, 
   availableThemes, 
   setTheme, 
   toggle, 
   colors 
-} = useMyVuetifyTheme()
+} = useVTheme()
 
 const { 
   defaults, 
@@ -14,7 +19,7 @@ const {
   resetAllDefaults, 
   presets, 
   applyPreset 
-} = useMyVuetifyDefaults()
+} = useVDefaults()
 
 // Component customization state
 const buttonRounded = ref('lg')

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref} from 'vue';
 
 // Nuxt 4 auto-imports composables
 const { currentTheme, isDark, toggle, availableThemes, setTheme } = useVTheme()
@@ -19,7 +19,7 @@ const presetOptions = [
 const handlePresetChange = (preset: string | null) => {
   resetAllDefaults()
   if (preset) {
-    applyPreset(preset as any)
+    applyPreset(preset as string)
   }
 }
 

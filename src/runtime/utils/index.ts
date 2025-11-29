@@ -1,6 +1,6 @@
 // Generate Vuetify configuration
-import type {ModuleOptions, ResolvedConfig} from "~/src/runtime/types";
-import type {ThemeDefinition} from "vuetify";
+import type {ModuleOptions, ResolvedConfig, ThemeDefinition} from "~/src/runtime/types";
+
 
 export // ----------------------------
 // Config generator (fixed)

@@ -42,12 +42,14 @@ export function useVDefaults() {
 
     // Reset defaults for a component
     const resetComponentDefaults = (componentName: string) => {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete localOverrides[componentName]
     }
 
     // Reset all local overrides
     const resetAllDefaults = () => {
         Object.keys(localOverrides).forEach((key) => {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete localOverrides[key]
         })
     }

@@ -1,9 +1,8 @@
 {
-  "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
     "strict": true,
     "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "node",
     "target": "ESNext",
     "lib": ["ESNext", "DOM"],
     "esModuleInterop": true,
@@ -16,7 +15,9 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.vue"
+    "src/**/*.vue",
+    "runtime",
+    "test/**/*.ts"
   ],
   "exclude": [
     "node_modules",
