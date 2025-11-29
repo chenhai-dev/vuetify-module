@@ -305,7 +305,7 @@ Create a SASS variables file and reference it in the config:
 ```typescript
 // nuxt.config.ts
 export default defineNuxtConfig({
-  myVuetify: {
+  Vuetify: {
     styles: {
       configFile: '~/assets/scss/vuetify-settings.scss',
     },
