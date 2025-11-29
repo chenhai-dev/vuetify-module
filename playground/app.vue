@@ -1,6 +1,9 @@
 <script setup lang="ts">
-const { currentTheme, isDark, toggle, availableThemes, setTheme, getCssVar } = useMyVuetifyTheme()
-const { applyPreset, resetAllDefaults } = useMyVuetifyDefaults()
+import { ref, computed } from 'vue';
+
+// Nuxt 4 auto-imports composables
+const { currentTheme, isDark, toggle, availableThemes, setTheme } = useVTheme()
+const { applyPreset, resetAllDefaults } = useVDefaults()
 
 const drawer = ref(false)
 const selectedPreset = ref<string | null>(null)
@@ -28,10 +31,10 @@ watch(selectedPreset, handlePresetChange)
     <!-- App Bar -->
     <v-app-bar>
       <v-app-bar-nav-icon @click="drawer = !drawer" />
-      <v-toolbar-title>My Vuetify Module Demo</v-toolbar-title>
-      
+      <v-toolbar-title>Nuxt Vuetify Module (Nuxt 4)</v-toolbar-title>
+
       <v-spacer />
-      
+
       <!-- Theme Selector -->
       <v-menu>
         <template #activator="{ props }">
@@ -41,10 +44,10 @@ watch(selectedPreset, handlePresetChange)
         </template>
         <v-list>
           <v-list-item
-            v-for="theme in availableThemes"
-            :key="theme"
-            :active="currentTheme === theme"
-            @click="setTheme(theme)"
+              v-for="theme in availableThemes"
+              :key="theme"
+              :active="currentTheme === theme"
+              @click="setTheme(theme)"
           >
             <v-list-item-title class="text-capitalize">
               {{ theme }}
@@ -52,7 +55,7 @@ watch(selectedPreset, handlePresetChange)
           </v-list-item>
         </v-list>
       </v-menu>
-      
+
       <!-- Dark Mode Toggle -->
       <v-btn icon @click="toggle">
         <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
@@ -67,16 +70,16 @@ watch(selectedPreset, handlePresetChange)
         <v-list-item prepend-icon="mdi-card" title="Cards" to="/cards" />
         <v-list-item prepend-icon="mdi-cog" title="Settings" to="/settings" />
       </v-list>
-      
+
       <v-divider />
-      
+
       <v-list-subheader>Component Presets</v-list-subheader>
       <v-list>
         <v-list-item
-          v-for="preset in presetOptions"
-          :key="preset.value"
-          :active="selectedPreset === preset.value"
-          @click="selectedPreset = selectedPreset === preset.value ? null : preset.value"
+            v-for="preset in presetOptions"
+            :key="preset.value"
+            :active="selectedPreset === preset.value"
+            @click="selectedPreset = selectedPreset === preset.value ? null : preset.value"
         >
           <v-list-item-title>{{ preset.title }}</v-list-item-title>
         </v-list-item>
@@ -97,6 +100,7 @@ watch(selectedPreset, handlePresetChange)
           <span class="text-body-2">
             Current Theme: <strong class="text-capitalize">{{ currentTheme }}</strong>
             | Dark Mode: <strong>{{ isDark ? 'Yes' : 'No' }}</strong>
+            | Nuxt 4
           </span>
         </v-col>
       </v-row>

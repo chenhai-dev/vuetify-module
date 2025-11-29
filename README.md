@@ -1,6 +1,6 @@
-# My Vuetify Module
+# Nuxt Vuetify Module (Nuxt 4)
 
-A custom Nuxt module for Vuetify 3 with enhanced theming, component defaults management, and performance optimizations.
+A custom Nuxt 4 module for Vuetify 3 with enhanced theming, component defaults management, and performance optimizations.
 
 ## Features
 
@@ -10,18 +10,25 @@ A custom Nuxt module for Vuetify 3 with enhanced theming, component defaults man
 - 🧩 **Composables** - Custom composables for theme and defaults
 - 📦 **Presets** - Quick component style presets
 - 🔌 **Hooks** - Custom hooks for configuration modification
+- 📁 **Nuxt 4 Ready** - Built for Nuxt 4's `app/` directory structure
+
+## Requirements
+
+- Nuxt 4.2.1+
+- Vuetify 3.0.0+
+- Node.js 18+
 
 ## Installation
 
 ```bash
 # npm
-npm install my-vuetify-module vuetify
+npm install nuxt-vuetify-module vuetify @mdi/font
 
 # yarn
-yarn add my-vuetify-module vuetify
+yarn add nuxt-vuetify-module vuetify @mdi/font
 
 # pnpm
-pnpm add my-vuetify-module vuetify
+pnpm add nuxt-vuetify-module vuetify @mdi/font
 ```
 
 ## Setup
@@ -30,12 +37,33 @@ Add the module to your `nuxt.config.ts`:
 
 ```typescript
 export default defineNuxtConfig({
-  modules: ['my-vuetify-module'],
+  // Nuxt 4 compatibility date
+  compatibilityDate: '2025-01-01',
   
-  myVuetify: {
+  modules: ['nuxt-vuetify-module'],
+  
+  Vuetify: {
     // Module options
   }
 })
+```
+
+## Nuxt 4 Directory Structure
+
+Nuxt 4 uses the new `app/` directory structure:
+
+```
+my-nuxt-app/
+├── app/                    # Application code (Nuxt 4)
+│   ├── app.vue
+│   ├── pages/
+│   ├── components/
+│   ├── composables/
+│   └── layouts/
+├── server/                 # Server code
+├── public/                 # Static assets
+├── nuxt.config.ts
+└── package.json
 ```
 
 ## Configuration
@@ -44,9 +72,11 @@ export default defineNuxtConfig({
 
 ```typescript
 export default defineNuxtConfig({
-  modules: ['my-vuetify-module'],
+  compatibilityDate: '2025-01-01',
   
-  myVuetify: {
+  modules: ['nuxt-vuetify-module'],
+  
+  Vuetify: {
     enabled: true,
     defaultTheme: 'light',
     
@@ -108,7 +138,7 @@ export default defineNuxtConfig({
 })
 ```
 
-### Full Options
+### Full Options Interface
 
 ```typescript
 interface ModuleOptions {
@@ -138,6 +168,7 @@ interface ModuleOptions {
   // SASS/SCSS customization
   styles?: {
     configFile?: string
+    disableVuetifyStyles?: boolean
   }
   
   // SSR configuration
@@ -165,7 +196,8 @@ interface ModuleOptions {
 ### Theme Management
 
 ```vue
-<script setup>
+<script setup lang="ts">
+// Nuxt 4 auto-imports composables
 const { 
   currentTheme, 
   isDark, 
@@ -174,7 +206,7 @@ const {
   availableThemes,
   colors,
   getCssVar 
-} = useMyVuetifyTheme()
+} = useVTheme()
 </script>
 
 <template>
@@ -200,13 +232,13 @@ const {
 ### Component Defaults
 
 ```vue
-<script setup>
+<script setup lang="ts">
 const { 
   defaults,
   setComponentDefault,
   resetAllDefaults,
   applyPreset 
-} = useMyVuetifyDefaults()
+} = useVDefaults()
 
 // Set custom default
 setComponentDefault('VBtn', { 
@@ -242,14 +274,14 @@ applyPreset('denseForm')
 
 ## Custom Hooks
 
-You can modify the module configuration using the `my-vuetify:config` hook:
+Modify module configuration using the `nuxt-vuetify:config` hook:
 
 ```typescript
 // In your module or plugin
 export default defineNuxtModule({
   setup(options, nuxt) {
-    nuxt.hook('my-vuetify:config', (config) => {
-      // Modify themes
+    nuxt.hook('nuxt-vuetify:config', (config) => {
+      // Add custom theme
       config.themes.custom = {
         dark: false,
         colors: {
@@ -257,13 +289,37 @@ export default defineNuxtModule({
         },
       }
       
-      // Add defaults
+      // Add component defaults
       config.defaults.VBtn = {
         rounded: 'pill',
       }
     })
   }
 })
+```
+
+## SASS Customization
+
+Create a SASS variables file and reference it in the config:
+
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  myVuetify: {
+    styles: {
+      configFile: '~/assets/scss/vuetify-settings.scss',
+    },
+  },
+})
+```
+
+```scss
+// assets/scss/vuetify-settings.scss
+@forward 'vuetify/settings' with (
+  $button-height: 44px,
+  $button-border-radius: 8px,
+  $card-border-radius: 12px,
+);
 ```
 
 ## Development
@@ -275,7 +331,7 @@ npm install
 # Prepare development
 npm run dev:prepare
 
-# Start development server
+# Start development server (uses playground/)
 npm run dev
 
 # Build module
@@ -284,6 +340,15 @@ npm run prepack
 # Run tests
 npm run test
 ```
+
+## Migration from Nuxt 3
+
+If migrating from Nuxt 3:
+
+1. Move your app code to the `app/` directory
+2. Update `compatibilityDate` to `'2025-01-01'` or later
+3. Update peer dependency to `nuxt: ^4.2.1`
+4. Check for any deprecated APIs
 
 ## License
 

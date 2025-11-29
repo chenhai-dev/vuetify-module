@@ -1,11 +1,11 @@
 <script setup lang="ts">
-const { currentTheme, isDark, colors, getCssVar } = useMyVuetifyTheme()
+const { currentTheme, isDark, colors } = useVTheme()
 
 const features = [
   {
     icon: 'mdi-palette',
     title: 'Theme Management',
-    description: 'Easy theme switching with persistence support',
+    description: 'Easy theme switching with cookie persistence',
   },
   {
     icon: 'mdi-tune-variant',
@@ -18,9 +18,9 @@ const features = [
     description: 'Tree-shaking and optimized bundle size',
   },
   {
-    icon: 'mdi-vuejs',
-    title: 'Composables',
-    description: 'Custom composables for theme and defaults',
+    icon: 'mdi-nuxt',
+    title: 'Nuxt 4 Ready',
+    description: 'Built for Nuxt 4 with app/ directory structure',
   },
 ]
 </script>
@@ -34,8 +34,11 @@ const features = [
           <h1 class="text-h3 font-weight-bold mb-4">
             My Vuetify Module
           </h1>
-          <p class="text-h6 font-weight-regular mb-6">
-            A custom Nuxt module for Vuetify with theming and performance optimizations
+          <p class="text-h6 font-weight-regular mb-2">
+            A custom Nuxt 4 module for Vuetify
+          </p>
+          <p class="text-body-1 mb-6">
+            With theming, defaults management, and performance optimizations
           </p>
           <v-btn color="white" size="large" variant="flat">
             Get Started
@@ -72,16 +75,16 @@ const features = [
           <v-card-text>
             <v-row>
               <v-col
-                v-for="(value, name) in colors"
-                :key="name"
-                cols="6"
-                sm="4"
-                md="3"
-                lg="2"
+                  v-for="(value, name) in colors"
+                  :key="name"
+                  cols="6"
+                  sm="4"
+                  md="3"
+                  lg="2"
               >
                 <div
-                  class="pa-4 rounded-lg text-center"
-                  :style="{ backgroundColor: value, color: isDark ? '#fff' : '#000' }"
+                    class="pa-4 rounded-lg text-center"
+                    :style="{ backgroundColor: value, color: isDark ? '#fff' : '#000' }"
                 >
                   <div class="text-caption font-weight-bold">{{ name }}</div>
                   <div class="text-caption">{{ value }}</div>
