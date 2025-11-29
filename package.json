@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-vuetify-module",
+  "name": "@chenhai-dev/nuxt-vuetify-module",
   "version": "1.0.0",
   "description": "Custom Nuxt 4 module for Vuetify with theming and performance optimizations",
   "license": "MIT",
@@ -44,7 +44,8 @@
     "typescript": "^5.9.3",
     "vitest": "^3.2.4",
     "vue": "^3.5.25",
-    "vuetify": "^3.11.1"
+    "vuetify": "^3.11.1",
+    "vue-tsc": "^3.1.5"
   },
   "peerDependencies": {
     "nuxt": "^4.2.1",
