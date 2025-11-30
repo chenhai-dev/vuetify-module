@@ -1,4 +1,4 @@
-# Nuxt Vuetify Module (Nuxt 4)
+# Vuetify Module (Nuxt 4)
 
 A custom Nuxt 4 module for Vuetify 3 with enhanced theming, component defaults management, and performance optimizations.
 
@@ -22,13 +22,13 @@ A custom Nuxt 4 module for Vuetify 3 with enhanced theming, component defaults m
 
 ```bash
 # npm
-npm install nuxt-vuetify-module vuetify @mdi/font
+npm install vuetify-module vuetify @mdi/font
 
 # yarn
-yarn add nuxt-vuetify-module vuetify @mdi/font
+yarn add vuetify-module vuetify @mdi/font
 
 # pnpm
-pnpm add nuxt-vuetify-module vuetify @mdi/font
+pnpm add vuetify-module vuetify @mdi/font
 ```
 
 ## Setup
@@ -40,9 +40,9 @@ export default defineNuxtConfig({
   // Nuxt 4 compatibility date
   compatibilityDate: '2025-01-01',
   
-  modules: ['nuxt-vuetify-module'],
+  modules: ['vuetify-module'],
   
-  Vuetify: {
+  vuetify: {
     // Module options
   }
 })
@@ -53,7 +53,7 @@ export default defineNuxtConfig({
 Nuxt 4 uses the new `app/` directory structure:
 
 ```
-my-nuxt-app/
+nuxt-app/
 ├── app/                    # Application code (Nuxt 4)
 │   ├── app.vue
 │   ├── pages/
@@ -74,9 +74,9 @@ my-nuxt-app/
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
   
-  modules: ['nuxt-vuetify-module'],
+  modules: ['vuetify-module'],
   
-  Vuetify: {
+  vuetify: {
     enabled: true,
     defaultTheme: 'light',
     
@@ -195,17 +195,33 @@ interface ModuleOptions {
 
 ### Theme Management
 
+The `useVTheme` composable wraps Vuetify's `useTheme` and exposes all its properties, plus additional helpers:
+
 ```vue
 <script setup lang="ts">
 // Nuxt 4 auto-imports composables
 const { 
-  currentTheme, 
-  isDark, 
-  toggle, 
-  setTheme, 
-  availableThemes,
-  colors,
-  getCssVar 
+  // ===== Vuetify useTheme exposed properties =====
+  // @see https://vuetifyjs.com/en/api/use-theme/#exposed
+  themes,           // Ref<Record<string, ThemeDefinition>> - Raw theme objects (mutable)
+  name,             // Ref<string> - Current theme name (readonly, inherited from parent)
+  current,          // Ref<ThemeDefinition> - Processed current theme
+  computedThemes,   // Ref<Record<string, ThemeDefinition>> - All processed themes
+  global,           // { name: Ref<string>, current: Ref<ThemeDefinition> } - Global theme state
+  
+  // ===== Helper properties =====
+  isDark,           // ComputedRef<boolean> - Is current theme dark
+  availableThemes,  // ComputedRef<string[]> - List of theme names
+  colors,           // ComputedRef<Record<string, string>> - Current theme colors
+  
+  // ===== Actions =====
+  toggle,           // () => void - Toggle light/dark with persistence
+  setTheme,         // (name: string) => void - Set specific theme with persistence
+  getColor,         // (name: string) => string | undefined - Get color value
+  getCssVar,        // (name: string) => string - Get CSS variable string
+  
+  // ===== Raw Vuetify theme instance =====
+  theme,            // Full Vuetify theme instance for advanced usage
 } = useVTheme()
 </script>
 
@@ -221,13 +237,37 @@ const {
       Brand Theme
     </v-btn>
     
+    <!-- Access global theme name -->
+    <p>Current theme: {{ global.name.value }}</p>
+    
+    <!-- Access themes directly (Vuetify API) -->
+    <p>Available: {{ Object.keys(themes) }}</p>
+    
     <!-- Use theme colors -->
     <div :style="{ color: getCssVar('primary') }">
       Styled with primary color
     </div>
+    
+    <!-- Mutate themes at runtime (Vuetify API) -->
+    <v-btn @click="themes.light.colors.primary = '#FF0000'">
+      Change Primary Color
+    </v-btn>
   </div>
 </template>
 ```
+
+#### Vuetify Theme API Reference
+
+The composable exposes all properties from Vuetify's `useTheme()`:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `themes` | `Ref<Record<string, ThemeDefinition>>` | Raw theme objects, can be mutated to add/update themes |
+| `name` | `Ref<string>` | Current theme name (inherited from parent components) |
+| `current` | `Ref<ThemeDefinition>` | Processed theme object with auto-generated colors |
+| `computedThemes` | `Ref<Record<string, ThemeDefinition>>` | All processed theme objects |
+| `global.name` | `Ref<string>` | Global theme name (writable) |
+| `global.current` | `Ref<ThemeDefinition>` | Processed global theme object |
 
 ### Component Defaults
 
@@ -274,13 +314,13 @@ applyPreset('denseForm')
 
 ## Custom Hooks
 
-Modify module configuration using the `nuxt-vuetify:config` hook:
+Modify module configuration using the `vuetify:config` hook:
 
 ```typescript
 // In your module or plugin
 export default defineNuxtModule({
   setup(options, nuxt) {
-    nuxt.hook('nuxt-vuetify:config', (config) => {
+    nuxt.hook('vuetify:config', (config) => {
       // Add custom theme
       config.themes.custom = {
         dark: false,
@@ -305,11 +345,11 @@ Create a SASS variables file and reference it in the config:
 ```typescript
 // nuxt.config.ts
 export default defineNuxtConfig({
-  Vuetify: {
-    styles: {
-      configFile: '~/assets/scss/vuetify-settings.scss',
+    vuetify: {
+        styles: {
+            configFile: '~/assets/scss/vuetify-settings.scss',
+        },
     },
-  },
 })
 ```
 

@@ -1,6 +1,7 @@
-import { computed, ref } from 'vue'
-import { useTheme } from 'vuetify'
-import {useCookie, useRuntimeConfig} from "nuxt/app";
+import {computed, type ComputedRef, onMounted, type Ref} from 'vue'
+import {type ThemeDefinition, type ThemeInstance, useTheme} from 'vuetify'
+import { useRuntimeConfig, useCookie } from '#imports'
+import type {InternalThemeDefinition} from "vuetify/lib/composables/theme";
 
 export interface UseVThemeOptions {
     /**
@@ -16,80 +17,156 @@ export interface UseVThemeOptions {
     cookieName?: string
 }
 
-export function useVTheme(options: UseVThemeOptions = {}) {
+interface UseVTheme {
+    themes: Ref<Record<string, InternalThemeDefinition>, Record<string, InternalThemeDefinition>>,
+    name: Readonly<Ref<string, string>>,
+    current: Ref<ThemeDefinition>,
+
+    computedThemes:Ref<Record<string, ThemeDefinition>>,
+    global:{ name: Ref<string>, current: Ref<ThemeDefinition> },
+
+    // ===== Helper properties =====
+    isDark:ComputedRef<boolean>,
+    availableThemes:ComputedRef<string[]>,
+    colors:ComputedRef<Record<string, string>>
+
+    // ===== Actions =====
+    toggle:() => void,
+    setTheme:(name: string) => void ,
+    getColor:(name: string) => string | undefined,
+    getCssVar:(name: string) => string,
+
+    theme:ThemeInstance,
+}
+
+export function useVTheme(options: UseVThemeOptions = {}):UseVTheme {
     const { persist = true, cookieName = 'vuetify-theme' } = options
 
-    const config = useRuntimeConfig().public.Vuetify
+    const config = useRuntimeConfig().public.vuetify
     const theme = useTheme()
 
-    // Cookie for persistence (Nuxt 4 useCookie is stable)
-    const themeCookie = persist
-        ? useCookie<string>(cookieName, { default: () => config.defaultTheme || 'light' })
-        : ref(config.defaultTheme || 'light')
-
-    // Current theme name
-    const currentTheme = computed({
-        get: () => theme.global.name.value,
-        set: (value: string) => {
-            theme.global.name.value = value
-            if (persist) {
-                themeCookie.value = value
-            }
-        },
+    // Cookie for persistence
+    const themeCookie = useCookie<string>(cookieName, {
+        default: () => config.defaultTheme || 'light'
     })
 
-    // Is dark mode
+    // ===== Exposed from Vuetify useTheme =====
+
+    /**
+     * Raw theme objects - can be mutated to add new themes or update existing colors
+     * @see https://vuetifyjs.com/en/api/use-theme/#exposed
+     */
+    const themes = theme.themes
+
+    /**
+     * Name of the current theme (inherited from parent components)
+     * Use theme.global.name for the global theme
+     */
+    const name = theme.name
+
+    /**
+     * Processed theme object, includes automatically generated colors
+     */
+    const current = theme.current
+
+    /**
+     * All processed theme objects
+     */
+    const computedThemes = theme.computedThemes
+
+    /**
+     * Global theme state
+     * - global.name: Ref<string> - Name of the current global theme (writable)
+     * - global.current: Ref<ThemeDefinition> - Processed theme object of the current global theme
+     */
+    const global = theme.global
+
+    // ===== Helper computed properties =====
+
+    /**
+     * Is the current theme dark
+     */
     const isDark = computed(() => theme.global.current.value.dark)
 
-    // Available themes
-    const availableThemes = computed(() => Object.keys(config.themes || {}))
+    /**
+     * List of available theme names
+     */
+    const availableThemes = computed(() => Object.keys(theme.themes.value))
 
-    // Theme colors
+    /**
+     * Current theme colors
+     */
     const colors = computed(() => theme.global.current.value.colors)
 
-    // Toggle between light and dark
-    const toggle = () => {
-        currentTheme.value = isDark.value ? 'light' : 'dark'
-    }
+    // ===== Actions =====
 
-    // Set specific theme
-    const setTheme = (themeName: string) => {
-        if (availableThemes.value.includes(themeName)) {
-            currentTheme.value = themeName
-        } else {
-            console.warn(`Theme "${themeName}" not found. Available themes: ${availableThemes.value.join(', ')}`)
+    /**
+     * Toggle between light and dark themes
+     */
+    const toggle = () => {
+        const newTheme = theme.global.current.value.dark ? 'light' : 'dark'
+        theme.global.name.value = newTheme
+        if (persist) {
+            themeCookie.value = newTheme
         }
     }
 
-    // Get color value
-    const getColor = (colorName: string): string | undefined => {
-        return colors.value[colorName]
+    /**
+     * Set a specific theme by name
+     */
+    const setTheme = (themeName: string) => {
+        if (Object.keys(theme.themes.value).includes(themeName)) {
+            theme.global.name.value = themeName
+            if (persist) {
+                themeCookie.value = themeName
+            }
+        } else {
+            console.warn(`Theme "${themeName}" not found. Available themes: ${Object.keys(theme.themes.value).join(', ')}`)
+        }
     }
 
-    // Get CSS variable for color (Vuetify 3 style)
+    /**
+     * Get a color value from the current theme
+     */
+    const getColor = (colorName: string): string | undefined => {
+        return theme.global.current.value.colors[colorName]
+    }
+
+    /**
+     * Get CSS variable string for a color (Vuetify 3 style)
+     */
     const getCssVar = (colorName: string): string => {
         return `rgb(var(--v-theme-${colorName}))`
     }
 
     // Initialize theme from cookie on client
-    if (import.meta.client && persist && themeCookie.value && themeCookie.value !== currentTheme.value) {
-        currentTheme.value = themeCookie.value
-    }
+    onMounted(() => {
+        if (persist && themeCookie.value && themeCookie.value !== theme.global.name.value) {
+            theme.global.name.value = themeCookie.value
+        }
+    })
 
     return {
-        // State
-        currentTheme,
-        isDark,
-        availableThemes,
-        colors,
+        // ===== Vuetify useTheme exposed =====
+        // @see https://vuetifyjs.com/en/api/use-theme/#exposed
+        themes,           // Ref<Record<string, ThemeDefinition>> - Raw theme objects (mutable)
+        name,             // Ref<string> - Current theme name (readonly, inherited)
+        current,          // Ref<ThemeDefinition> - Processed current theme
+        computedThemes,   // Ref<Record<string, ThemeDefinition>> - All processed themes
+        global,           // { name: Ref<string>, current: Ref<ThemeDefinition> } - Global theme state
 
-        // Actions
-        toggle,
-        setTheme,
-        getColor,
-        getCssVar,
+        // ===== Helper properties =====
+        isDark,           // ComputedRef<boolean> - Is current theme dark
+        availableThemes,  // ComputedRef<string[]> - List of theme names
+        colors,           // ComputedRef<Record<string, string>> - Current theme colors
 
-        // Raw theme instance
-        theme,
+        // ===== Actions =====
+        toggle,           // () => void - Toggle light/dark
+        setTheme,         // (name: string) => void - Set specific theme
+        getColor,         // (name: string) => string | undefined - Get color value
+        getCssVar,        // (name: string) => string - Get CSS variable string
+
+        // ===== Raw Vuetify theme instance =====
+        theme,            // Full Vuetify theme instance for advanced usage
     }
 }

@@ -1,18 +1,11 @@
 import type {
     ThemeDefinition,
-    IconAliases,
-    IconSet, Blueprint,
+    IconOptions,
+    Blueprint,
 } from 'vuetify'
 import type {DefaultsOptions} from "vuetify/lib/composables/defaults";
 import type {SSROptions} from "vuetify/lib/composables/display";
-
-type InternalIconOptions = {
-    defaultSet: 'mdi' | 'fa' | 'mdi-svg' | string;
-    aliases: Partial<IconAliases>;
-    sets: Record<string, IconSet>;
-}
-export type IconOptions =  Partial<InternalIconOptions>
-export type { ThemeDefinition }
+export type { ThemeDefinition,IconOptions}
 // Module options interface
 export interface ModuleOptions {
     /**
@@ -35,7 +28,7 @@ export interface ModuleOptions {
     /**
      * Component Register - Custom from Vuetify
      * aliases: {
-     *    MyButton: 'VBtn'
+     *    VButton: 'VBtn'
      * }
      */
     aliases?:Record<string, unknown>
@@ -44,12 +37,6 @@ export interface ModuleOptions {
      * Default component props
      */
     defaults?: DefaultsOptions
-
-    /**
-     * Enable lab components (experimental)
-     * @default false
-     */
-    labComponents?: boolean
 
     /**
      * Blueprint preset name
@@ -104,15 +91,35 @@ export interface ModuleOptions {
          */
         prefetch?: boolean
     }
-
+    /**
+     * Enable lab components (experimental)
+     * @default false
+     */
+    labComponents?: boolean
+    /**
+     * Enable transform asset url
+     * @default false
+     */
     transformAssetUrls?:boolean
     
 }
 
 // VuetifyOptions configuration
 export interface VuetifyOptions {
-    defaultTheme: ModuleOptions['defaultTheme']
+    defaultTheme: Exclude<ModuleOptions['defaultTheme'], undefined>
+    themes: Exclude<ModuleOptions['themes'], undefined>
+    aliases: Exclude<ModuleOptions['aliases'], undefined>
+    defaults: Exclude<ModuleOptions['defaults'], undefined>
+    icons: Exclude<ModuleOptions['icons'], undefined>
+    ssr: Exclude<ModuleOptions['ssr'], undefined>
+    blueprint: Exclude<ModuleOptions['blueprint'], undefined>
+    labComponents: Exclude<ModuleOptions['labComponents'], undefined>
+}
+
+// Resolved configuration
+export interface VuetifyConfig {
     themes: ModuleOptions['themes']
     defaults: ModuleOptions['defaults']
     icons: ModuleOptions['icons']
+    aliases: ModuleOptions['aliases']
 }

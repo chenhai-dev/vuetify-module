@@ -6,23 +6,26 @@ import {
     createResolver,
     defineNuxtModule, extendViteConfig, useLogger,
 } from '@nuxt/kit'
-import type {HookResult} from "@nuxt/schema";
 import vuetify, {transformAssetUrls} from 'vite-plugin-vuetify';
+import {md3} from "vuetify/blueprints";
 import {defu} from 'defu'
-import type {ModuleOptions, ThemeDefinition, VuetifyOptions} from "./runtime/types";
-import {generateVuetifyConfig} from "./runtime/utils";
+import type {HookResult} from "@nuxt/schema";
 import type {OutputOptions} from "rollup";
+import type {ModuleOptions, VuetifyConfig, ThemeDefinition, VuetifyOptions} from "./runtime/types";
+import {generateVuetifyConfig} from "./runtime/utils";
+
+// Re-export types
+export type {ModuleOptions, VuetifyConfig, VuetifyOptions, ThemeDefinition}
 
 export interface ModuleHooks {
-    'vuetify:config': (config: VuetifyOptions) => HookResult
+    'vuetify:config': (config: VuetifyConfig) => HookResult
 }
 
-const CONFIG_KEY = 'vuetify'
-const logger = useLogger(`nuxt:${CONFIG_KEY}`)
+const logger = useLogger(`nuxt:vuetify`)
 export default defineNuxtModule<ModuleOptions>({
     meta: {
-        name: 'vuetify-nuxt-module',
-        configKey: CONFIG_KEY,
+        name: 'vuetify-module',
+        configKey: 'vuetify',
         compatibility: {
             nuxt: '^3.9.0 || ^4.0.0',
         },
@@ -31,12 +34,12 @@ export default defineNuxtModule<ModuleOptions>({
     // Default configuration options of the Nuxt module
     defaults: {
         enabled: true,
-        // Vuetify theme :{defaultTheme:'light',themes:{light:{},dark:{}}}
         defaultTheme: 'light',
         themes: {
             light: {
                 dark: false,
                 colors: {
+                    // Color
                     primary: '#1976D2',
                     secondary: '#424242',
                     accent: '#82B1FF',
@@ -44,6 +47,7 @@ export default defineNuxtModule<ModuleOptions>({
                     info: '#2196F3',
                     success: '#4CAF50',
                     warning: '#FB8C00',
+                    //Background
                     background: '#FAFAFA',
                     surface: '#FFFFFF',
                 },
@@ -51,6 +55,7 @@ export default defineNuxtModule<ModuleOptions>({
             dark: {
                 dark: true,
                 colors: {
+                    // Color
                     primary: '#2196F3',
                     secondary: '#424242',
                     accent: '#FF4081',
@@ -58,11 +63,13 @@ export default defineNuxtModule<ModuleOptions>({
                     info: '#2196F3',
                     success: '#4CAF50',
                     warning: '#FB8C00',
+                    //Background
                     background: '#121212',
                     surface: '#212121',
                 },
             },
         },
+        aliases: {},
         // Default Component - Props
         defaults: {
             VBtn: {
@@ -135,11 +142,10 @@ export default defineNuxtModule<ModuleOptions>({
                 slim: true,
             },
         },
-        // Lab components
-        labComponents: false,
         // Icon
         icons: {
             defaultSet: 'mdi',
+            useSvg: false,
         },
         //SSR
         ssr: {
@@ -154,6 +160,9 @@ export default defineNuxtModule<ModuleOptions>({
             treeShaking: true,
             prefetch: false,
         },
+        // Lab components
+        labComponents: false,
+        transformAssetUrls: true,
     },
 
     // Setup function
@@ -166,36 +175,48 @@ export default defineNuxtModule<ModuleOptions>({
 
         const resolver = createResolver(import.meta.url)
 
-
-        // Load configuration
-        const config: VuetifyOptions = {
-            defaultTheme: options.defaultTheme || 'light',
-            themes: options.themes || {},
-            defaults: options.defaults || {},
-            icons: options.icons || {},
+        const resolvedConfig: VuetifyConfig = {
+            themes: options.themes,
+            defaults: options.defaults,
+            icons: options.icons,
+            aliases: options.aliases,
         }
 
         // Call custom hook for config modification
         // In Nuxt 4, hooks are called during modules:done
         nuxt.hook('modules:done', async () => {
-            await nuxt.callHook('vuetify:config', config)
+            await nuxt.callHook('vuetify:config', resolvedConfig)
         })
 
-        // Expose options to runtime config
-        nuxt.options.runtimeConfig.public.Vuetify = defu(
-            nuxt.options.runtimeConfig.public.Vuetify || {},
+        // Expose options to runtime config (only serializable options)
+        nuxt.options.runtimeConfig.public.vuetify = defu(
+            nuxt.options.runtimeConfig.public.vuetify || {},
             {
-                defaultTheme: config.defaultTheme,
-                themes: config.themes,
-                defaults: config.defaults,
-                icons: config.icons || {},
-                ssr: options.ssr || {},
-                blueprint: options.blueprint || 'md3',
-                labComponents: options.labComponents || false
+                defaultTheme: options.defaultTheme,
+                themes: resolvedConfig.themes,
+                defaults: resolvedConfig.defaults,
+                icons: resolvedConfig.icons,
+                aliases: resolvedConfig.aliases,
+                ssr: options.ssr,
+                blueprint: options.blueprint,
+                labComponents: options.labComponents,
+            }
+        )
+        nuxt.options.runtimeConfig.vuetify = defu(
+            nuxt.options.runtimeConfig.vuetify || {},
+            {
+                defaultTheme: options.defaultTheme,
+                themes: resolvedConfig.themes,
+                defaults: resolvedConfig.defaults,
+                icons: resolvedConfig.icons,
+                aliases: resolvedConfig.aliases,
+                ssr: options.ssr,
+                blueprint: options.blueprint,
+                labComponents: options.labComponents,
             }
         )
 
-        // 1. Configure Vite plugin
+        // Configure Vite plugin
         if (options.performance?.treeShaking) {
             nuxt.hooks.hook('vite:extendConfig', (config) => {
                 config.plugins?.push(vuetify({autoImport: true}));
@@ -234,6 +255,7 @@ export default defineNuxtModule<ModuleOptions>({
             nuxt.options.vite.vue.template.transformAssetUrls = transformAssetUrls;
         }
 
+
         // Configure Vite for Vuetify (Nuxt 4 uses Vite by default)
         extendViteConfig((config) => {
             config.optimizeDeps = nuxt.options.vite.optimizeDeps || {};
@@ -264,13 +286,25 @@ export default defineNuxtModule<ModuleOptions>({
             }
         })
 
+        // Build VuetifyOptions for config generation
+        const vuetifyOptions: VuetifyOptions = {
+            defaultTheme: options.defaultTheme || 'light',
+            themes: resolvedConfig.themes || {},
+            aliases:resolvedConfig.aliases || {},
+            defaults: resolvedConfig.defaults || {},
+            icons: resolvedConfig.icons || { defaultSet: 'mdi' },
+            ssr: options.ssr || false,
+            blueprint: options.blueprint || md3,
+            labComponents: options.labComponents || false,
+        }
+
         // Generate Vuetify configuration template
         addTemplate({
             filename: 'vuetify-config.mjs',
             getContents: () => generateVuetifyConfig(
                 options,
-                config.themes as Record<string, Partial<ThemeDefinition>>,
-                config
+                resolvedConfig.themes,
+                vuetifyOptions
             ),
         })
 
@@ -319,28 +353,30 @@ declare module '@nuxt/schema' {
     }
 
     interface NuxtHooks {
-        'vuetify:config': (config: VuetifyOptions) => HookResult
+        'vuetify:config': (config: VuetifyConfig) => HookResult
     }
 
     interface NuxtConfig {
-        Vuetify?: ModuleOptions
+        vuetify?: ModuleOptions
     }
 
     interface NuxtOptions {
-        Vuetify?: ModuleOptions
+        vuetify?: ModuleOptions
     }
 
-
     interface PublicRuntimeConfig {
-        Vuetify: {
-            defaultTheme: ModuleOptions['defaultTheme']
-            themes: ModuleOptions['themes']
-            defaults: ModuleOptions['defaults']
-            icons: ModuleOptions['icons']
-            ssr: ModuleOptions['ssr']
-            blueprint?: ModuleOptions['blueprint']
-            labComponents?: ModuleOptions['labComponents']
-        }
+        vuetify: VuetifyOptions
+    }
+
+    interface RuntimeConfig {
+        vuetify: VuetifyOptions,
+        public: PublicRuntimeConfig
+    }
+}
+
+declare module '#app' {
+    interface NuxtApp {
+        $vuetify: ReturnType<typeof import('vuetify')['createVuetify']>
     }
 }
 

@@ -1,5 +1,5 @@
 {
-  "name": "@chenhai-dev/nuxt-vuetify-module",
+  "name": "nuxt-vuetify-module",
   "version": "1.0.0",
   "description": "Custom Nuxt 4 module for Vuetify with theming and performance optimizations",
   "license": "MIT",
@@ -26,11 +26,11 @@
     "test:watch": "vitest watch"
   },
   "dependencies": {
-    "@mdi/font": "^7.4.47",
     "@nuxt/kit": "^4.2.1",
     "defu": "^6.1.4"
   },
   "devDependencies": {
+    "@mdi/font": "^7.4.47",
     "@nuxt/devtools": "^3.1.1",
     "@nuxt/eslint-config": "^1.11.0",
     "@nuxt/module-builder": "^1.0.2",
@@ -49,7 +49,7 @@
     "vuetify": "^3.11.1"
   },
   "peerDependencies": {
-    "nuxt": "^4.2.1",
-    "vuetify": "^3.11.1"
+    "nuxt": "^4.0.0",
+    "vuetify": "^3.0.0"
   }
 }

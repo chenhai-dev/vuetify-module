@@ -15,6 +15,7 @@ export  function generateVuetifyConfig(
 export const vuetifyConfig = {
   defaultTheme: '${options.defaultTheme}',
   themes: ${JSON.stringify(themes, null, 2)},
+  aliases: ${JSON.stringify(config.aliases, null, 2)},
   defaults: ${JSON.stringify(config.defaults, null, 2)},
   icons: {
     defaultSet: '${config.icons?.defaultSet || 'mdi'}',

@@ -1,13 +1,12 @@
-import { computed, reactive } from 'vue'
-import { useDefaults as useVuetifyDefaults } from 'vuetify'
-import {useRuntimeConfig} from "nuxt/app";
-
+import {computed, reactive} from 'vue'
+import {useDefaults as useVuetifyDefaults} from 'vuetify'
+import { useRuntimeConfig } from '#imports'
 export interface ComponentDefaults {
     [componentName: string]: Record<string, unknown>
 }
 
 export function useVDefaults() {
-    const config = useRuntimeConfig().public.Vuetify
+    const config = useRuntimeConfig().public.vuetify
 
     // Get Vuetify's useDefaults
     const vuetifyDefaults = useVuetifyDefaults()
@@ -58,43 +57,43 @@ export function useVDefaults() {
     const presets = {
         // Dense form preset
         denseForm: () => {
-            setComponentDefault('VTextField', { density: 'compact', variant: 'outlined' })
-            setComponentDefault('VSelect', { density: 'compact', variant: 'outlined' })
-            setComponentDefault('VAutocomplete', { density: 'compact', variant: 'outlined' })
-            setComponentDefault('VTextarea', { density: 'compact', variant: 'outlined' })
-            setComponentDefault('VCheckbox', { density: 'compact' })
-            setComponentDefault('VRadio', { density: 'compact' })
-            setComponentDefault('VSwitch', { density: 'compact' })
+            setComponentDefault('VTextField', {density: 'compact', variant: 'outlined'})
+            setComponentDefault('VSelect', {density: 'compact', variant: 'outlined'})
+            setComponentDefault('VAutocomplete', {density: 'compact', variant: 'outlined'})
+            setComponentDefault('VTextarea', {density: 'compact', variant: 'outlined'})
+            setComponentDefault('VCheckbox', {density: 'compact'})
+            setComponentDefault('VRadio', {density: 'compact'})
+            setComponentDefault('VSwitch', {density: 'compact'})
         },
 
         // Comfortable form preset
         comfortableForm: () => {
-            setComponentDefault('VTextField', { density: 'comfortable', variant: 'outlined' })
-            setComponentDefault('VSelect', { density: 'comfortable', variant: 'outlined' })
-            setComponentDefault('VAutocomplete', { density: 'comfortable', variant: 'outlined' })
-            setComponentDefault('VTextarea', { density: 'comfortable', variant: 'outlined' })
+            setComponentDefault('VTextField', {density: 'comfortable', variant: 'outlined'})
+            setComponentDefault('VSelect', {density: 'comfortable', variant: 'outlined'})
+            setComponentDefault('VAutocomplete', {density: 'comfortable', variant: 'outlined'})
+            setComponentDefault('VTextarea', {density: 'comfortable', variant: 'outlined'})
         },
 
         // Rounded components preset
         rounded: () => {
-            setComponentDefault('VBtn', { rounded: 'pill' })
-            setComponentDefault('VCard', { rounded: 'xl' })
-            setComponentDefault('VTextField', { rounded: 'lg' })
-            setComponentDefault('VChip', { rounded: 'pill' })
+            setComponentDefault('VBtn', {rounded: 'pill'})
+            setComponentDefault('VCard', {rounded: 'xl'})
+            setComponentDefault('VTextField', {rounded: 'lg'})
+            setComponentDefault('VChip', {rounded: 'pill'})
         },
 
         // Flat components preset
         flat: () => {
-            setComponentDefault('VBtn', { variant: 'flat' })
-            setComponentDefault('VCard', { variant: 'flat' })
-            setComponentDefault('VAppBar', { flat: true })
+            setComponentDefault('VBtn', {variant: 'flat'})
+            setComponentDefault('VCard', {variant: 'flat'})
+            setComponentDefault('VAppBar', {flat: true})
         },
 
         // Elevated components preset
         elevated: () => {
-            setComponentDefault('VBtn', { elevation: 2 })
-            setComponentDefault('VCard', { elevation: 4 })
-            setComponentDefault('VAppBar', { elevation: 2 })
+            setComponentDefault('VBtn', {elevation: 2})
+            setComponentDefault('VCard', {elevation: 4})
+            setComponentDefault('VAppBar', {elevation: 2})
         },
     }
 

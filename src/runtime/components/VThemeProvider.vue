@@ -39,14 +39,14 @@ const props = withDefaults(defineProps<Props>(), {
   withBackground: false,
 })
 
-const { currentTheme, isDark, availableThemes } = useVTheme()
+const { global, isDark, availableThemes } = useVTheme()
 
 // Computed theme to use
 const appliedTheme = computed(() => {
   if (props.theme && availableThemes.value.includes(props.theme)) {
     return props.theme
   }
-  return currentTheme.value
+  return global.name.value
 })
 
 // Provide theme context to children

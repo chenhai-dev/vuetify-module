@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { ref} from 'vue';
+import {ref, watch} from "vue";
 
-// Nuxt 4 auto-imports composables
-const { currentTheme, isDark, toggle, availableThemes, setTheme } = useVTheme()
-const { applyPreset, resetAllDefaults } = useVDefaults()
+const { global, isDark, toggle, availableThemes, setTheme } = useVTheme()
+const { presets,applyPreset, resetAllDefaults } = useVDefaults()
 
 const drawer = ref(false)
 const selectedPreset = ref<string | null>(null)
@@ -19,7 +18,7 @@ const presetOptions = [
 const handlePresetChange = (preset: string | null) => {
   resetAllDefaults()
   if (preset) {
-    applyPreset(preset as string)
+    applyPreset(preset as (keyof typeof presets))
   }
 }
 
@@ -31,7 +30,7 @@ watch(selectedPreset, handlePresetChange)
     <!-- App Bar -->
     <v-app-bar>
       <v-app-bar-nav-icon @click="drawer = !drawer" />
-      <v-toolbar-title>Nuxt Vuetify Module (Nuxt 4)</v-toolbar-title>
+      <v-toolbar-title>Vuetify Module (Nuxt 4)</v-toolbar-title>
 
       <v-spacer />
 
@@ -44,13 +43,13 @@ watch(selectedPreset, handlePresetChange)
         </template>
         <v-list>
           <v-list-item
-              v-for="theme in availableThemes"
-              :key="theme"
-              :active="currentTheme === theme"
-              @click="setTheme(theme)"
+              v-for="themeName in availableThemes"
+              :key="themeName"
+              :active="global.name.value === themeName"
+              @click="setTheme(themeName)"
           >
             <v-list-item-title class="text-capitalize">
-              {{ theme }}
+              {{ themeName }}
             </v-list-item-title>
           </v-list-item>
         </v-list>
@@ -98,7 +97,7 @@ watch(selectedPreset, handlePresetChange)
       <v-row justify="center" no-gutters>
         <v-col class="text-center" cols="12">
           <span class="text-body-2">
-            Current Theme: <strong class="text-capitalize">{{ currentTheme }}</strong>
+            Current Theme: <strong class="text-capitalize">{{ global.name.value }}</strong>
             | Dark Mode: <strong>{{ isDark ? 'Yes' : 'No' }}</strong>
             | Nuxt 4
           </span>

@@ -1,14 +1,18 @@
 // Nuxt 4 configuration
+import {defineNuxtConfig} from "nuxt/config";
+
 export default defineNuxtConfig({
     // Nuxt 4 compatibility
-    compatibilityDate: '2025-01-01',
+    compatibilityDate: '2025-11-15',
 
-    modules: ['../src/module'],
+    modules: [
+        '../src/module'
+    ],
 
     devtools: { enabled: true },
 
     // Configure the custom Vuetify module
-    Vuetify: {
+    vuetify: {
         enabled: true,
         defaultTheme: 'light',
 
@@ -17,9 +21,9 @@ export default defineNuxtConfig({
                 dark: false,
                 colors: {
                     primary: '#6200EE',
-                    'primary-darken-1': '#3700B3',
+                    // 'primary-darken-1': '#3700B3',
                     secondary: '#03DAC6',
-                    'secondary-darken-1': '#018786',
+                    // 'secondary-darken-1': '#018786',
                     accent: '#82B1FF',
                     error: '#CF6679',
                     info: '#2196F3',
@@ -33,9 +37,9 @@ export default defineNuxtConfig({
                 dark: true,
                 colors: {
                     primary: '#BB86FC',
-                    'primary-darken-1': '#3700B3',
+                    // 'primary-darken-1': '#3700B3',
                     secondary: '#03DAC6',
-                    'secondary-darken-1': '#03DAC6',
+                    // 'secondary-darken-1': '#03DAC6',
                     accent: '#FF4081',
                     error: '#CF6679',
                     info: '#2196F3',
@@ -46,39 +50,31 @@ export default defineNuxtConfig({
                 },
             },
             // Custom brand theme
-            brand: {
-                dark: false,
-                colors: {
-                    primary: '#FF6B35',
-                    secondary: '#004E89',
-                    accent: '#F7C59F',
-                    error: '#E63946',
-                    info: '#457B9D',
-                    success: '#2A9D8F',
-                    warning: '#E9C46A',
-                    background: '#FFF8F0',
-                    surface: '#FFFFFF',
-                },
-            },
+            // brand: {
+            //     dark: false,
+            //     colors: {
+            //         primary: '#FF6B35',
+            //         secondary: '#004E89',
+            //         accent: '#F7C59F',
+            //         error: '#E63946',
+            //         info: '#457B9D',
+            //         success: '#2A9D8F',
+            //         warning: '#E9C46A',
+            //         background: '#FFF8F0',
+            //         surface: '#FFFFFF',
+            //     },
+            // },
         },
+
+        aliases:{},
 
         defaults: {
             VBtn: {
-                rounded: 'lg',
                 elevation: 2,
             },
             VCard: {
                 rounded: 'xl',
                 elevation: 4,
-            },
-            VTextField: {
-                variant: 'outlined',
-                density: 'comfortable',
-                color: 'primary',
-            },
-            VSelect: {
-                variant: 'outlined',
-                density: 'comfortable',
             },
             VAppBar: {
                 elevation: 0,

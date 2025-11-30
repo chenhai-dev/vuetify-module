@@ -32,7 +32,7 @@ const features = [
       <v-col cols="12">
         <v-card class="pa-8 text-center" color="primary" dark>
           <h1 class="text-h3 font-weight-bold mb-4">
-            My Vuetify Module
+            Vuetify Nuxt Module
           </h1>
           <p class="text-h6 font-weight-regular mb-2">
             A custom Nuxt 4 module for Vuetify
