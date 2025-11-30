@@ -216,48 +216,12 @@ export default defineNuxtModule<ModuleOptions>({
             }
         )
 
-        // Configure Vite plugin
-        if (options.performance?.treeShaking) {
-            nuxt.hooks.hook('vite:extendConfig', (config) => {
-                config.plugins?.push(vuetify({autoImport: true}));
-            });
-        }
-
         // Add Vuetify to transpile
         nuxt.options.build.transpile.push('vuetify')
 
-        // Add Vuetify CSS (unless disabled)
-        if (!options.styles?.disableVuetifyStyles) {
-            nuxt.options.css.push('vuetify/styles')
-        }
-
-        // Add custom SASS config file if provided
-        if (options.styles?.configFile) {
-            extendViteConfig((config) => {
-                // Configure vite-plugin-vuetify for SASS variable customization
-                config.css = config.css || {}
-                config.css.preprocessorOptions = config.css.preprocessorOptions || {}
-                config.css.preprocessorOptions.scss = {
-                    ...config.css.preprocessorOptions.scss,
-                    additionalData: `@use "${options.styles!.configFile}" as *;`,
-                }
-            })
-        }
-
-        // Add icon font CSS if not using SVG
-        if (!options.icons?.useSvg) {
-            nuxt.options.css.push('@mdi/font/css/materialdesignicons.css')
-        }
-
-        if (options.transformAssetUrls) {
-            nuxt.options.vite.vue = nuxt.options.vite.vue || {};
-            nuxt.options.vite.vue.template = nuxt.options.vite.vue.template || {};
-            nuxt.options.vite.vue.template.transformAssetUrls = transformAssetUrls;
-        }
-
-
         // Configure Vite for Vuetify (Nuxt 4 uses Vite by default)
         extendViteConfig((config) => {
+        // nuxt.hook('vite:extendConfig', (config) => {
             config.optimizeDeps = nuxt.options.vite.optimizeDeps || {};
             config.optimizeDeps.include = nuxt.options.vite.optimizeDeps?.include || [];
             config.optimizeDeps.include.push('vuetify')
@@ -265,34 +229,83 @@ export default defineNuxtModule<ModuleOptions>({
             // SASS configuration with modern compiler (Nuxt 4 default)
             config.css = config.css || {}
             config.css.preprocessorOptions = config.css.preprocessorOptions || {}
-            config.css.preprocessorOptions.scss = {
-                ...config.css.preprocessorOptions.scss,
+            // Add custom SASS config file if provided
+            if (options.styles?.configFile) {
+                // Configure vite-plugin-vuetify for SASS variable customization
+                config.css.preprocessorOptions.scss = {
+                    ...config.css.preprocessorOptions.scss,
+                    additionalData: `@use "${options.styles!.configFile}" as *;`,
+                }
+            }
+            else {
+                config.css.preprocessorOptions.scss = {
+                    ...config.css.preprocessorOptions.scss,
+                }
             }
 
             // Define process.env.DEBUG for Vuetify
             config.define = config.define || {}
             config.define['process.env.DEBUG'] = false
 
-            // Chunk splitting for better caching
-            config.build = config.build || {}
-            config.build.rollupOptions = config.build.rollupOptions || {}
-            config.build.rollupOptions.output = config.build.rollupOptions.output || {}
+            // Add vite-plugin-vuetify for tree shaking and styles
+            config.plugins = config.plugins || []
+            config.plugins.push(
+                vuetify({
+                    autoImport: options.performance?.treeShaking !== false,
+                    styles: options.styles?.configFile
+                        ? { configFile: options.styles.configFile }
+                        : true,
+                })
+            )
+            // Chunk splitting for better caching (when treeShaking is enabled)
+            if (options.performance?.treeShaking !== false) {
+                config.build = config.build || {}
+                config.build.rollupOptions = config.build.rollupOptions || {}
+                config.build.rollupOptions.output = config.build.rollupOptions.output || {}
 
-            if (!Array.isArray(config.build.rollupOptions.output)) {
-                config.build.rollupOptions.output.manualChunks = {
-                    ...((config.build.rollupOptions.output as OutputOptions).manualChunks || {}),
-                    vuetify: ['vuetify'],
+                if (!Array.isArray(config.build.rollupOptions.output)) {
+                    config.build.rollupOptions.output.manualChunks = {
+                        ...((config.build.rollupOptions.output as OutputOptions).manualChunks || {}),
+                        vuetify: ['vuetify'],
+                    }
+                }
+            }
+
+            // SSR configuration
+            if (options.performance?.treeShaking !== false) {
+                config.ssr = config.ssr || {}
+                config.ssr.noExternal = config.ssr.noExternal || []
+                if (Array.isArray(config.ssr.noExternal)) {
+                    config.ssr.noExternal.push('vuetify')
                 }
             }
         })
+
+        // Transform asset URLs for Vuetify components (v-img, v-card, etc.)
+        if (options.transformAssetUrls !== false) {
+            nuxt.options.vue = nuxt.options.vue || {}
+            nuxt.options.vue = nuxt.options.vue || {}
+            nuxt.options.vue.transformAssetUrls = transformAssetUrls
+        }
+
+        // Add Vuetify CSS (unless disabled)
+        if (!options.styles?.disableVuetifyStyles) {
+            nuxt.options.css.push('vuetify/styles')
+        }
+
+        // Add icon font CSS if not using SVG
+        if (!options.icons?.useSvg) {
+            nuxt.options.css.push('@mdi/font/css/materialdesignicons.css')
+        }
+
 
         // Build VuetifyOptions for config generation
         const vuetifyOptions: VuetifyOptions = {
             defaultTheme: options.defaultTheme || 'light',
             themes: resolvedConfig.themes || {},
-            aliases:resolvedConfig.aliases || {},
+            aliases: resolvedConfig.aliases || {},
             defaults: resolvedConfig.defaults || {},
-            icons: resolvedConfig.icons || { defaultSet: 'mdi' },
+            icons: resolvedConfig.icons || {defaultSet: 'mdi'},
             ssr: options.ssr || false,
             blueprint: options.blueprint || md3,
             labComponents: options.labComponents || false,
@@ -347,6 +360,16 @@ export default defineNuxtModule<ModuleOptions>({
 })
 
 // Declare module augmentation for Nuxt 4
+declare module 'nuxt/schema' {
+    interface NuxtConfig {
+        vuetify?: ModuleOptions
+    }
+
+    interface NuxtHooks {
+        'vuetify:config': (config: VuetifyConfig) => HookResult
+    }
+}
+
 declare module '@nuxt/schema' {
     interface NuxtApp {
         $vuetify: ReturnType<typeof import('vuetify')['createVuetify']>
