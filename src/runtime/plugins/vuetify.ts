@@ -40,7 +40,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
     // Create Vuetify instance with Nuxt 4 SSR support
     const vuetify = createVuetify({
-        ssr: true,
+        ssr: config.ssr,
         // components,
         // directives,
         aliases: componentAliases,
@@ -49,8 +49,11 @@ export default defineNuxtPlugin((nuxtApp) => {
             themes,
         },
         defaults: config.defaults || {},
+        display: {
+            mobileBreakpoint: 'sm',
+        },
         icons: iconConfig,
-        blueprint: config.blueprint,
+        blueprint: config.blueprint
     })
 
     // Provide Vuetify to the Vue app

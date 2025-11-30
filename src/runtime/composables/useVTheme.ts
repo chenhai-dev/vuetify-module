@@ -105,7 +105,7 @@ export function useVTheme(options: UseVThemeOptions = {}):UseVTheme {
      */
     const toggle = () => {
         const newTheme = theme.global.current.value.dark ? 'light' : 'dark'
-        theme.global.name.value = newTheme
+        theme.change(newTheme)
         if (persist) {
             themeCookie.value = newTheme
         }
@@ -116,7 +116,7 @@ export function useVTheme(options: UseVThemeOptions = {}):UseVTheme {
      */
     const setTheme = (themeName: string) => {
         if (Object.keys(theme.themes.value).includes(themeName)) {
-            theme.global.name.value = themeName
+            theme.change(themeName)
             if (persist) {
                 themeCookie.value = themeName
             }
@@ -142,7 +142,7 @@ export function useVTheme(options: UseVThemeOptions = {}):UseVTheme {
     // Initialize theme from cookie on client
     onMounted(() => {
         if (persist && themeCookie.value && themeCookie.value !== theme.global.name.value) {
-            theme.global.name.value = themeCookie.value
+            theme.change(themeCookie.value)
         }
     })
 

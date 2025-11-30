@@ -9,7 +9,8 @@ export default defineNuxtConfig({
         '../src/module'
     ],
 
-    devtools: { enabled: true },
+    ssr:false,
+    devtools: { enabled: false },
 
     // Configure the custom Vuetify module
     vuetify: vuetify,

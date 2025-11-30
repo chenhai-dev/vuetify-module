@@ -78,4 +78,5 @@ export const vuetify:ModuleOptions = {
     performance: {
         treeShaking: true,
     },
+    ssr:true
 }
