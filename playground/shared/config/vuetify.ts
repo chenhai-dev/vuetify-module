@@ -78,5 +78,8 @@ export const vuetify:ModuleOptions = {
     performance: {
         treeShaking: true,
     },
-    ssr:true
+    ssr:{
+        clientWidth: 1920,
+        clientHeight: 1080,
+    }
 }

@@ -4,6 +4,7 @@ import {createVuetify} from 'vuetify'
 // import * as directives from 'vuetify/directives'
 import { aliases, mdi } from 'vuetify/iconsets/mdi';
 import type {IconOptions, ModuleOptions} from "../types";
+import type {DisplayOptions} from "vuetify/lib/composables/display";
 
 export default defineNuxtPlugin((nuxtApp) => {
     const config = useRuntimeConfig().public.vuetify
@@ -38,9 +39,23 @@ export default defineNuxtPlugin((nuxtApp) => {
     // Build component aliases
     const componentAliases = config.aliases || {}
 
+    // Build display configuration for SSR
+    // @see https://vuetifyjs.com/en/features/display-and-platform/#ssr
+    const displayConfig:DisplayOptions = {
+        mobileBreakpoint: 'sm',
+        thresholds: {
+            xs: 0,
+            sm: 600,
+            md: 960,
+            lg: 1280,
+            xl: 1920,
+            xxl: 2560,
+        },
+    }
+
     // Create Vuetify instance with Nuxt 4 SSR support
     const vuetify = createVuetify({
-        ssr: config.ssr,
+        ssr: config.ssr||true,
         // components,
         // directives,
         aliases: componentAliases,
@@ -49,10 +64,8 @@ export default defineNuxtPlugin((nuxtApp) => {
             themes,
         },
         defaults: config.defaults || {},
-        display: {
-            mobileBreakpoint: 'sm',
-        },
         icons: iconConfig,
+        display: displayConfig,
         blueprint: config.blueprint
     })
 

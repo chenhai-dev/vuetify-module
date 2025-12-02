@@ -219,6 +219,14 @@ export default defineNuxtModule<ModuleOptions>({
         // Add Vuetify to transpile
         nuxt.options.build.transpile.push('vuetify')
 
+        // IMPORTANT: If using SASS configFile with SSR, disable inlineStyles
+        // @see https://vuetify-nuxt-module.netlify.app/guide/server-side-rendering.html
+        if (options.styles?.configFile && nuxt.options.ssr) {
+            // For Nuxt 3.9.0+
+            nuxt.options.features = nuxt.options.features || {}
+            nuxt.options.features.inlineStyles = false
+        }
+
         // Configure Vite for Vuetify (Nuxt 4 uses Vite by default)
         extendViteConfig((config) => {
         // nuxt.hook('vite:extendConfig', (config) => {
@@ -257,6 +265,18 @@ export default defineNuxtModule<ModuleOptions>({
                         : true,
                 })
             )
+
+            // SSR configuration - Vuetify must not be externalized
+            // @see https://vuetifyjs.com/en/getting-started/installation/#ssr
+            if (options.performance?.treeShaking !== false) {
+                config.ssr = config.ssr || {}
+                config.ssr.noExternal = config.ssr.noExternal || []
+                if (Array.isArray(config.ssr.noExternal)) {
+                    config.ssr.noExternal.push('vuetify')
+                }
+            }
+
+
             // Chunk splitting for better caching (when treeShaking is enabled)
             if (options.performance?.treeShaking !== false) {
                 config.build = config.build || {}
@@ -271,14 +291,6 @@ export default defineNuxtModule<ModuleOptions>({
                 }
             }
 
-            // SSR configuration
-            if (options.performance?.treeShaking !== false) {
-                config.ssr = config.ssr || {}
-                config.ssr.noExternal = config.ssr.noExternal || []
-                if (Array.isArray(config.ssr.noExternal)) {
-                    config.ssr.noExternal.push('vuetify')
-                }
-            }
         })
 
         // Transform asset URLs for Vuetify components (v-img, v-card, etc.)
@@ -298,6 +310,17 @@ export default defineNuxtModule<ModuleOptions>({
             nuxt.options.css.push('@mdi/font/css/materialdesignicons.css')
         }
 
+        // Prefetch Vuetify chunks for faster navigation
+        if (options.performance?.prefetch) {
+            nuxt.hook('build:manifest', (manifest) => {
+                for (const key in manifest) {
+                    const entry = manifest[key]
+                    if (entry?.file?.includes('vuetify')) {
+                        entry.prefetch = true
+                    }
+                }
+            })
+        }
 
         // Build VuetifyOptions for config generation
         const vuetifyOptions: VuetifyOptions = {

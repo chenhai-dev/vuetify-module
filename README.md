@@ -6,15 +6,17 @@ A custom Nuxt 4 module for Vuetify 3 with enhanced theming, component defaults m
 
 - 🎨 **Theme Management** - Easy theme switching with cookie persistence
 - 🔧 **Component Defaults** - Global and scoped component default props
-- ⚡ **Performance Optimized** - Tree-shaking and bundle optimization
-- 🧩 **Composables** - Custom composables for theme and defaults
+- ⚡ **Performance Optimized** - Tree-shaking via `vite-plugin-vuetify`
+- 🧩 **Composables** - Custom + auto-imported Vuetify composables
 - 📦 **Presets** - Quick component style presets
 - 🔌 **Hooks** - Custom hooks for configuration modification
+- 🖥️ **SSR Ready** - Full SSR support with display configuration
+- 🧪 **Lab Components** - Optional experimental Vuetify components
 - 📁 **Nuxt 4 Ready** - Built for Nuxt 4's `app/` directory structure
 
 ## Requirements
 
-- Nuxt 4.2.1+
+- Nuxt 4.0.0+
 - Vuetify 3.0.0+
 - Node.js 18+
 
@@ -191,6 +193,78 @@ interface ModuleOptions {
 }
 ```
 
+### SSR Configuration
+
+Configure SSR display dimensions for proper server-side rendering. This helps Vuetify calculate responsive breakpoints correctly during SSR:
+
+```typescript
+myVuetify: {
+  ssr: {
+    clientWidth: 1920,   // Default viewport width for SSR
+    clientHeight: 1080,  // Default viewport height for SSR
+  }
+}
+```
+
+The SSR configuration is passed to Vuetify's `display` option, which includes:
+- Mobile breakpoint detection
+- Responsive thresholds (xs, sm, md, lg, xl, xxl)
+- Initial client dimensions for hydration
+
+### Tree Shaking
+
+Tree shaking is enabled by default using `vite-plugin-vuetify` and includes:
+- Auto-import of Vuetify components (only imports what you use)
+- Chunk splitting for Vuetify (separate bundle for better caching)
+- SSR optimization with `noExternal` configuration
+
+To disable:
+
+```typescript
+myVuetify: {
+    performance: {
+        treeShaking: false
+    }
+}
+```
+
+### Prefetch
+
+Enable prefetching of Vuetify chunks for faster page navigation:
+
+```typescript
+myVuetify: {
+  performance: {
+    prefetch: true
+  }
+}
+```
+When enabled, Vuetify chunks will be prefetched in the background, improving navigation speed between pages.
+
+### Transform Asset URLs
+
+Asset URL transformation is enabled by default using `transformAssetUrls` from `vite-plugin-vuetify`. This allows using aliases and relative paths in Vuetify component attributes:
+
+```vue
+<template>
+  <!-- These work with transformAssetUrls enabled -->
+  <v-img src="~/assets/images/hero.jpg" />
+  <v-card image="@/assets/card-bg.png" />
+  <v-avatar image="./profile.jpg" />
+  <v-carousel-item src="~/assets/slide.jpg" />
+</template>
+```
+
+Supported components include: `v-img`, `v-card`, `v-card-item`, `v-avatar`, `v-app-bar`, `v-parallax`, `v-carousel-item`, `v-navigation-drawer`, and more.
+
+To disable:
+
+```typescript
+myVuetify: {
+  transformAssetUrls: false
+}
+```
+
 ## Usage
 
 ### Theme Management
@@ -199,30 +273,30 @@ The `useVTheme` composable wraps Vuetify's `useTheme` and exposes all its proper
 
 ```vue
 <script setup lang="ts">
-// Nuxt 4 auto-imports composables
-const { 
-  // ===== Vuetify useTheme exposed properties =====
-  // @see https://vuetifyjs.com/en/api/use-theme/#exposed
-  themes,           // Ref<Record<string, ThemeDefinition>> - Raw theme objects (mutable)
-  name,             // Ref<string> - Current theme name (readonly, inherited from parent)
-  current,          // Ref<ThemeDefinition> - Processed current theme
-  computedThemes,   // Ref<Record<string, ThemeDefinition>> - All processed themes
-  global,           // { name: Ref<string>, current: Ref<ThemeDefinition> } - Global theme state
-  
-  // ===== Helper properties =====
-  isDark,           // ComputedRef<boolean> - Is current theme dark
-  availableThemes,  // ComputedRef<string[]> - List of theme names
-  colors,           // ComputedRef<Record<string, string>> - Current theme colors
-  
-  // ===== Actions =====
-  toggle,           // () => void - Toggle light/dark with persistence
-  setTheme,         // (name: string) => void - Set specific theme with persistence
-  getColor,         // (name: string) => string | undefined - Get color value
-  getCssVar,        // (name: string) => string - Get CSS variable string
-  
-  // ===== Raw Vuetify theme instance =====
-  theme,            // Full Vuetify theme instance for advanced usage
-} = useVTheme()
+  // Nuxt 4 auto-imports composables
+  const {
+    // ===== Vuetify useTheme exposed properties =====
+    // @see https://vuetifyjs.com/en/api/use-theme/#exposed
+    themes,           // Ref<Record<string, ThemeDefinition>> - Raw theme objects (mutable)
+    name,             // Ref<string> - Current theme name (readonly, inherited from parent)
+    current,          // Ref<ThemeDefinition> - Processed current theme
+    computedThemes,   // Ref<Record<string, ThemeDefinition>> - All processed themes
+    global,           // { name: Ref<string>, current: Ref<ThemeDefinition> } - Global theme state
+
+    // ===== Helper properties =====
+    isDark,           // ComputedRef<boolean> - Is current theme dark
+    availableThemes,  // ComputedRef<string[]> - List of theme names
+    colors,           // ComputedRef<Record<string, string>> - Current theme colors
+
+    // ===== Actions =====
+    toggle,           // () => void - Toggle light/dark with persistence
+    setTheme,         // (name: string) => void - Set specific theme with persistence
+    getColor,         // (name: string) => string | undefined - Get color value
+    getCssVar,        // (name: string) => string - Get CSS variable string
+
+    // ===== Raw Vuetify theme instance =====
+    theme,            // Full Vuetify theme instance for advanced usage
+  } = useVTheme()
 </script>
 
 <template>
@@ -360,6 +434,63 @@ export default defineNuxtConfig({
   $button-border-radius: 8px,
   $card-border-radius: 12px,
 );
+```
+
+## Best Practices
+
+### SSR Configuration
+
+1. **Always set SSR dimensions** - Helps Vuetify calculate responsive breakpoints during server rendering:
+   ```typescript
+   myVuetify: {
+     ssr: {
+       clientWidth: 1920,
+       clientHeight: 1080,
+     }
+   }
+   ```
+
+2. **Use `useDisplay` with watchers** - Due to SSR hydration, use `watch` with `immediate: true`:
+   ```vue
+   <script setup>
+   const { lgAndUp } = useDisplay()
+   const isMobile = ref(false)
+   
+   watch(lgAndUp, (val) => {
+     isMobile.value = !val
+   }, { immediate: true })
+   </script>
+   ```
+
+3. **SASS configFile with SSR** - The module automatically disables `inlineStyles` when using `styles.configFile` with SSR enabled.
+
+### Performance
+
+1. **Tree shaking is enabled by default** via `vite-plugin-vuetify`
+2. **Use prefetch sparingly** - Only enable if navigation speed is critical
+3. **Vuetify is chunked separately** for better caching
+
+### Auto-imported Composables
+
+The following Vuetify composables are auto-imported:
+- `useTheme`
+- `useDisplay`
+- `useLayout`
+- `useLocale`
+- `useDefaults`
+- `useRtl`
+
+Plus module composables:
+- `useVTheme`
+- `useVDefaults`
+
+### Lab Components
+
+Enable experimental Vuetify components:
+```typescript
+myVuetify: {
+  labComponents: true
+}
 ```
 
 ## Development
