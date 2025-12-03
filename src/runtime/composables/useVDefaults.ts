@@ -1,6 +1,5 @@
 import {computed, reactive} from 'vue'
 import {useDefaults as useVuetifyDefaults} from 'vuetify'
-import { useRuntimeConfig } from '#imports'
 export interface ComponentDefaults {
     [componentName: string]: Record<string, unknown>
 }

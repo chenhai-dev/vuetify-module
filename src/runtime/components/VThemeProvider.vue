@@ -5,7 +5,6 @@
  */
 import { computed, provide } from 'vue'
 import { VThemeProvider as VuetifyThemeProvider } from 'vuetify/components'
-import { useVTheme } from '../composables/useVTheme'
 
 interface Props {
   /**
@@ -39,14 +38,14 @@ const props = withDefaults(defineProps<Props>(), {
   withBackground: false,
 })
 
-const { global, isDark, availableThemes } = useVTheme()
+const { name, isDark, availableThemes } = useVTheme()
 
 // Computed theme to use
 const appliedTheme = computed(() => {
   if (props.theme && availableThemes.value.includes(props.theme)) {
     return props.theme
   }
-  return global.name.value
+  return name.value
 })
 
 // Provide theme context to children

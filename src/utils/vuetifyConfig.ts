@@ -1,10 +1,10 @@
 // Generate Vuetify configuration
 import type {ModuleOptions,VuetifyOptions} from "../types";
 
-
 // ----------------------------
 // Config generator (fixed)
 // ----------------------------
+
 export  function generateVuetifyConfig(
     options: ModuleOptions,
     themes: ModuleOptions['themes'],

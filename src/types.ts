@@ -2,17 +2,19 @@ import type {
     ThemeDefinition,
     IconOptions,
     Blueprint,
+    Anchor
 } from 'vuetify'
-import type {DefaultsOptions} from "vuetify/lib/composables/defaults";
-import type {SSROptions} from "vuetify/lib/composables/display";
+import type {DefaultsInstance} from "vuetify/framework";
+
 export type { ThemeDefinition,IconOptions}
+export type DefaultsOptions = Partial<DefaultsInstance>
+export type SSROptions = boolean | {
+    clientWidth: number;
+    clientHeight?: number;
+};
+
 // Module options interface
 export interface ModuleOptions {
-    /**
-     * Enable/disable the module
-     * @default true
-     */
-    enabled?: boolean
 
     /**
      * Default theme name
@@ -101,7 +103,7 @@ export interface ModuleOptions {
      * @default false
      */
     transformAssetUrls?:boolean
-    
+
 }
 
 // VuetifyOptions configuration
@@ -122,4 +124,67 @@ export interface VuetifyConfig {
     defaults: ModuleOptions['defaults']
     icons: ModuleOptions['icons']
     aliases: ModuleOptions['aliases']
+}
+
+/**
+ * Snackbar options for show() method
+ */
+export interface SnackbarOptions {
+    message: string
+    color?: 'success' | 'error' | 'info' | 'warning' | string
+    timeout?: number
+    location?: Anchor
+    icon?: string
+}
+
+/**
+ * Snackbar state interface
+ */
+export interface SnackbarState {
+    visible: boolean
+    message: string
+    color: string
+    timeout: number
+    location: Anchor
+    icon?: string
+}
+
+/**
+ * Confirm dialog options
+ */
+export interface ConfirmDialogOptions {
+    title?: string
+    message: string
+    confirmText?: string
+    cancelText?: string
+    confirmColor?: string
+    cancelColor?: string
+    persistent?: boolean
+}
+
+/**
+ * Confirm dialog state interface
+ */
+export interface ConfirmDialogState {
+    visible: boolean
+    title: string
+    message: string
+    confirmText: string
+    cancelText: string
+    confirmColor: string
+    cancelColor: string
+    persistent: boolean
+}
+
+/**
+ * Breakpoint names
+ */
+export type BreakpointName = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
+
+/**
+ * Loading state options
+ */
+export interface LoadingOptions {
+    text?: string
+    color?: string
 }

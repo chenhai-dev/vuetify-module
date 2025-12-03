@@ -1,7 +1,5 @@
 import {computed, type ComputedRef, onMounted, type Ref} from 'vue'
 import {type ThemeDefinition, type ThemeInstance, useTheme} from 'vuetify'
-import { useRuntimeConfig, useCookie } from '#imports'
-import type {InternalThemeDefinition} from "vuetify/lib/composables/theme";
 
 export interface UseVThemeOptions {
     /**
@@ -18,7 +16,7 @@ export interface UseVThemeOptions {
 }
 
 interface UseVTheme {
-    themes: Ref<Record<string, InternalThemeDefinition>, Record<string, InternalThemeDefinition>>,
+    themes: Ref<Record<string, ThemeDefinition>, Record<string, ThemeDefinition>>,
     name: Readonly<Ref<string, string>>,
     current: Ref<ThemeDefinition>,
 

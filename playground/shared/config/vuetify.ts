@@ -2,7 +2,6 @@ import type {ModuleOptions} from "../../../src/runtime/types";
 
 
 export const vuetify:ModuleOptions = {
-    enabled: true,
     defaultTheme: 'light',
 
     themes: {
