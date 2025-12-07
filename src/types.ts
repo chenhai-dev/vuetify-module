@@ -7,7 +7,24 @@ import type * as Components from 'vuetify/components'
 import type * as Directives from 'vuetify/directives'
 
 /**
- * Module-level configuration options
+ * Module-level configuration options for Nuxt Vuetify Module
+ *
+ * @example
+ * ```typescript
+ * export default defineNuxtConfig({
+ *   vuetify: {
+ *     autoImport: {
+ *       labs: true,
+ *       ignore: ['VBtn']
+ *     },
+ *     vuetifyOptions: {
+ *       theme: {
+ *         defaultTheme: 'dark'
+ *       }
+ *     }
+ *   }
+ * })
+ * ```
  */
 
 export interface VuetifyModuleOptions {
@@ -84,7 +101,7 @@ export interface VuetifyModuleOptions {
 /**
  * Vuetify instance configuration
  */
-export interface VuetifyOptions extends Partial<Omit<VOptions, 'aliases' | 'theme'>> {
+export interface VuetifyOptions extends Partial<Omit<VOptions, 'aliases' | 'theme' | 'blueprint'>> {
   /**
    * Component aliases (e.g., { VButton: VBtn , MyButton: 'VBtn'})
    */
@@ -94,6 +111,12 @@ export interface VuetifyOptions extends Partial<Omit<VOptions, 'aliases' | 'them
    * Theme configuration
    */
   theme?: Exclude<VOptions['theme'], false>
+
+  /**
+   * Material Design blueprint version
+   * @default 'md3'
+   */
+  blueprint?: 'md1' | 'md2' | 'md3'
 
 }
 
@@ -116,6 +139,15 @@ export interface VuetifyRuntimeConfig {
  */
 export interface ModuleOptions extends VuetifyModuleOptions {
   vuetifyOptions: VuetifyOptions
+  /**
+   * Date adapter configuration for date pickers
+   * Options: 'vuetify' (built-in), 'date-fns', 'moment', 'luxon', 'dayjs', 'js-joda'
+   * @default undefined
+   */
+  dateAdapter?: 'vuetify' | 'date-fns' | 'moment' | 'luxon' | 'dayjs' | 'js-joda' | {
+    adapter: unknown
+    locale?: unknown
+  }
 }
 export interface ModulePublicRuntimeConfig {
   vuetify: Partial<VuetifyRuntimeConfig>
@@ -135,11 +167,6 @@ export interface ModuleRuntimeHooks {
 declare module '#app' {
   interface NuxtApp {
     $vuetify: ReturnType<typeof createVuetify>
-    $config: {
-      public: {
-        vuetify: Partial<VuetifyOptions>
-      }
-    }
   }
   interface RuntimeNuxtHooks extends ModuleRuntimeHooks {
     'vuetify:ready': (vuetify: ReturnType<typeof createVuetify>) => HookResult
@@ -159,32 +186,14 @@ declare module '@nuxt/schema' {
     'vuetify:registerModule': (registerModule: (config: Pick<ModuleOptions, 'vuetifyOptions'>) => void) => HookResult
   }
   interface PublicRuntimeConfig extends ModulePublicRuntimeConfig {
-    vuetify: {
-      icons: {
-        defaultSet: string
-      }
-    }
-  }
-}
-
-declare module 'nuxt/schema' {
-  interface PublicRuntimeConfig extends ModulePublicRuntimeConfig {
-    vuetify: {
-      icons: {
-        defaultSet: string
-      }
-    }
-  }
-  interface NuxtHooks extends ModuleHooks {
-    'vuetify:registerModule': (registerModule: (config: Pick<ModuleOptions, 'vuetifyOptions'>) => void) => HookResult
+    vuetify: Partial<VuetifyRuntimeConfig>
   }
 }
 
 // Augment #app types
-
-declare module '@vue/runtime-core' {
-  interface ComponentCustomProperties {
-    $vuetify: ReturnType<typeof createVuetify>
+declare module 'vue' {
+  export interface ComponentCustomProperties {
+    $vuetify: Vuetify
   }
 }
 

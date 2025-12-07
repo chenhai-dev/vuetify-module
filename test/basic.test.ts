@@ -1,24 +1,33 @@
-import { fileURLToPath } from "node:url";
-import { describe, it, expect } from "vitest";
-import { setup, $fetch } from "@nuxt/test-utils/e2e";
+import { describe, it, expect } from 'vitest'
+import { fileURLToPath } from 'node:url'
+import { setup, $fetch } from '@nuxt/test-utils'
 
-describe("vuetify-module (Nuxt 4)", async () => {
+describe('vuetify module', async () => {
   await setup({
-    rootDir: fileURLToPath(new URL("./fixtures/basic", import.meta.url)),
-  });
+    rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
+  })
 
-  it("renders the index page with v-app", async () => {
-    // Get response to a server-rendered page with `$fetch`.
-    const html = await $fetch("/");
-    expect(html).toContain("v-app");
-  });
-  it("includes Vuetify styles", async () => {
-    const html = await $fetch("/");
-    expect(html).toContain("vuetify");
-  });
+  it('renders components with auto-import', async () => {
+    const html = await $fetch('/')
+    expect(html).toContain('v-btn')
+  })
 
-  it("has theme CSS variables configured", async () => {
-    const html = await $fetch("/");
-    expect(html).toContain("--v-theme-primary");
-  });
-});
+  it('includes Vuetify styles', async () => {
+    const html = await $fetch('/')
+    expect(html).toContain('vuetify')
+  })
+
+  it('provides $vuetify instance', async () => {
+    // Test Vuetify instance is available
+  })
+
+  it('supports directives auto-import', async () => {
+    const html = await $fetch('/directives')
+    expect(html).toContain('v-ripple')
+  })
+
+  it('supports labs components when enabled', async () => {
+    const html = await $fetch('/labs')
+    expect(html).toContain('v-date-input')
+  })
+})

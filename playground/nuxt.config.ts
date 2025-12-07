@@ -1,5 +1,3 @@
-import { transformAssetUrls } from 'vite-plugin-vuetify'
-
 export default defineNuxtConfig({
   modules: ['../src/module'],
 
@@ -29,34 +27,7 @@ export default defineNuxtConfig({
   },
   // Vuetify module configuration
   vuetify: {
-    // ─────────────────────────────────────────────────────────────
-    // PERFORMANCE OPTIONS (for fast page load)
-    // ─────────────────────────────────────────────────────────────
-
-    // Enable tree-shaking to reduce bundle size (recommended)
-    autoImport: true,
-
-    // Prefetch Vuetify chunks for faster navigation
-    prefetch: true,
-
-    // Preload critical Vuetify assets
-    preload: true,
-
-    // Use SASS source for custom variables (optional, slower build but smaller CSS)
-    // styles: 'sass',
-
-    // ─────────────────────────────────────────────────────────────
-    // FEATURE OPTIONS
-    // ─────────────────────────────────────────────────────────────
-
-    // Auto-import Vuetify composables (useTheme, useDisplay, etc.)
-    importComposables: true,
-
-    // ─────────────────────────────────────────────────────────────
-    // VUETIFY OPTIONS (customize your Vuetify instance)
-    // ─────────────────────────────────────────────────────────────
     vuetifyOptions: {
-      // Component defaults - customize your component props
       defaults: {
         global: {
           ripple: true,
@@ -75,7 +46,6 @@ export default defineNuxtConfig({
         },
       },
 
-      // Theme configuration
       theme: {
         defaultTheme: 'light',
         themes: {
@@ -109,8 +79,6 @@ export default defineNuxtConfig({
           },
         },
       },
-
-      // Display/breakpoint configuration
       display: {
         mobileBreakpoint: 'md',
         thresholds: {
@@ -123,7 +91,6 @@ export default defineNuxtConfig({
         },
       },
 
-      // Icon configuration (mdi is default)
       icons: {
         defaultSet: 'mdi',
       },
@@ -135,10 +102,15 @@ export default defineNuxtConfig({
       },
 
       // SSR configuration
-      ssr: {
-        clientWidth: 1280,
-        clientHeight: 800,
-      },
+      ssr: true,
     },
+    styles: {
+      configFile: 'assets/scss/vuetify-settings.scss',
+    },
+    autoImport: true,
+    importComposables: true,
+    prefetch: true,
+    preload: true,
+
   },
 })

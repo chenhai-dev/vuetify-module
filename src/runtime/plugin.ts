@@ -1,8 +1,10 @@
 import { defineNuxtPlugin, useRuntimeConfig } from '#app'
-import { createVuetify } from 'vuetify'
-import { md3 } from 'vuetify/blueprints'
-import { aliases, mdi } from 'vuetify/iconsets/mdi'
+import { createVuetify, type VuetifyOptions as VOptions } from 'vuetify'
+import { VuetifyDateAdapter } from 'vuetify/date/adapters/vuetify'
 import type { VuetifyOptions } from '../types'
+import { setIcon } from '../utils/icon'
+import { setBlueprints } from '../utils/blueprints'
+import { setLocaleOptions } from '~/src/utils/locale'
 
 export default defineNuxtPlugin({
   name: 'vuetify:nuxt:plugin',
@@ -12,27 +14,30 @@ export default defineNuxtPlugin({
     const runtimeConfig = useRuntimeConfig()
     const options: VuetifyOptions = runtimeConfig.public.vuetify as Partial<VuetifyOptions>
 
-    console.log('test', options)
+    const icons = setIcon(options)
 
-    /*
-    * Reconstruct full Vuetify config
-    * (Runtime config can't serialize functions/classes, so we rebuild them here)
-    */
-    const vuetifyOptions: VuetifyOptions = {
+    const blueprint = setBlueprints(options)
+    const locale = setLocaleOptions(options)
+
+    const resolvedOption: VuetifyOptions | VOptions = {
       ...options,
-
-      // Re-attach non-serializable blueprint:
-      blueprint: md3,
-
-      // Re-attach icon sets (non-serializable functions)
-      icons: {
-        defaultSet: options.icons?.defaultSet || 'mdi',
-        aliases: {
-          ...aliases,
-          ...(options.icons?.aliases || {}),
+      date: options.date || {
+        adapter: VuetifyDateAdapter,
+        formats: {
+          weekdayNarrow: { weekday: 'narrow' },
         },
-        sets: { mdi },
       },
+      icons: icons,
+      locale: locale,
+    }
+
+    const vuetifyOptions: VuetifyOptions = {
+      ...resolvedOption,
+    }
+    const option: VOptions = {
+      ...resolvedOption,
+
+      blueprint: blueprint,
     }
 
     /* -----------------------------------------------
@@ -50,7 +55,7 @@ export default defineNuxtPlugin({
     /* -----------------------------------------------
      * Create Vuetify instance with Nuxt 4 SSR support
      * --------------------------------------------- */
-    const vuetify = createVuetify(vuetifyOptions)
+    const vuetify = createVuetify(option)
 
     /* -----------------------------------------------
      * Provide Vuetify to the Vue app

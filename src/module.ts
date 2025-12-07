@@ -9,7 +9,9 @@ import type { Nuxt } from '@nuxt/schema'
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import { defu } from 'defu'
 import type { ModuleOptions, VuetifyOptions, VuetifyRuntimeConfig } from './types'
-import { addIconStyles, generateVuetifyConfigTemplate } from './utils'
+import { generateVuetifyConfigTemplate } from './utils'
+import { addIconStyles } from './utils/icon'
+import { en } from 'vuetify/locale'
 
 // Re-export types
 export type { ModuleOptions } from './types'
@@ -114,6 +116,17 @@ const defaultVuetifyOptions: VuetifyOptions = {
       location: 'top',
     },
   },
+  display: {
+    mobileBreakpoint: 'md',
+    thresholds: {
+      xs: 0,
+      sm: 600,
+      md: 960,
+      lg: 1280,
+      xl: 1920,
+      xxl: 2560,
+    },
+  },
   theme: {
     defaultTheme: 'light',
     themes: {
@@ -162,15 +175,18 @@ const defaultVuetifyOptions: VuetifyOptions = {
       },
     },
   },
+  icons: {
+    defaultSet: 'mdi',
+    aliases: {},
+  },
   locale: {
     locale: 'en',
     fallback: 'en',
-    // messages: { en, km },
   },
   ssr: true,
 }
 
-const logger = useLogger(`nuxt:vutify-module`)
+const logger = useLogger(`nuxt:vuetify-module`)
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
@@ -208,6 +224,20 @@ export default defineNuxtModule<ModuleOptions>({
     const startTime = Date.now()
 
     logger.info('Starting Vuetify module setup...')
+
+    // Validate options
+    if (options.autoImport && typeof options.autoImport === 'object') {
+      if (options.autoImport.labs && !options.autoImport.labs) {
+        logger.warn('Labs components enabled but vite-plugin-vuetify may need explicit configuration')
+      }
+    }
+
+    // Validate icon set
+    const validIconSets = ['mdi', 'mdi-svg', 'fa', 'fa-svg', 'md']
+    const iconSet = options.vuetifyOptions?.icons?.defaultSet
+    if (iconSet && !validIconSets.includes(iconSet)) {
+      logger.warn(`Unknown icon set: ${iconSet}. Valid options: ${validIconSets.join(', ')}`)
+    }
 
     /* -----------------------------------------------
      * Runtime Configuration
@@ -265,6 +295,27 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.options.build.transpile.push('vuetify')
     nuxt.options.build.transpile.push(resolver.resolve('./runtime'))
 
+    // Add date adapter if specified
+    if (options.dateAdapter) {
+      nuxt.options.build.transpile.push('vuetify/lib')
+
+      // Add date adapter imports based on selection
+      // if (typeof options.dateAdapter === 'string') {
+      //   const adapterMap = {
+      //     'date-fns': '@date-io/date-fns',
+      //     'moment': '@date-io/moment',
+      //     'luxon': '@date-io/luxon',
+      //     'dayjs': '@date-io/dayjs',
+      //     'js-joda': '@date-io/js-joda',
+      //   }
+      //   const adapterPackage = adapterMap[options.dateAdapter]
+      //   if (adapterPackage) {
+      //     logger.info(`Using date adapter: ${options.dateAdapter}`)
+      //     runtimeConfig.dateAdapter = options.dateAdapter
+      //   }
+      // }
+    }
+
     /* -----------------------------------------------
      * Nuxt - Vuetify transformAssetUrls
      * --------------------------------------------- */
@@ -318,7 +369,7 @@ export default defineNuxtModule<ModuleOptions>({
      * --------------------------------------------- */
     extendViteConfig((config) => {
       // Optimize
-      config.optimizeDeps = defu(config.optimizeDeps, { exclude: ['vuetify'] })
+      // config.optimizeDeps = defu(config.optimizeDeps, { exclude: ['vuetify'] })
       config.optimizeDeps = defu(config.optimizeDeps, { includes: ['vuetify'] })
 
       // Prevent externalizing Vuetify for SSR/build
@@ -343,7 +394,7 @@ export default defineNuxtModule<ModuleOptions>({
       addVitePlugin(vuetify({
         autoImport: options.autoImport,
         styles: typeof options.styles === 'object' && options.styles?.configFile
-          ? { configFile: resolver.resolve(options.styles.configFile) }
+          ? { configFile: options.styles.configFile }
           : (options.styles || true),
       }), {
         prepend: true,

@@ -1,0 +1,25 @@
+// Vuetify SASS variable customization example
+@use 'vuetify/settings' with (
+  // Borders
+  $border-radius-root: 8px,
+  $border-thin-width: 1px,
+
+  // Buttons
+  $button-height: 40px,
+  $button-border-radius: 6px,
+  $button-font-weight: 500,
+
+  // Cards
+  $card-border-radius: 12px,
+
+  // Dialogs
+  $dialog-border-radius: 16px,
+
+  // Text fields
+  $input-font-size: 16px,
+  $field-border-radius: 8px,
+
+  // Typography
+  $body-font-family: 'Inter, sans-serif',
+  $heading-font-family: 'Inter, sans-serif',
+);
