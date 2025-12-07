@@ -3,14 +3,13 @@ import {
   addPlugin,
   createResolver,
   extendViteConfig,
-  extendWebpackConfig,
   addImportsDir, addVitePlugin, addTemplate, useLogger, addComponentsDir,
 } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
-import vuetify from 'vite-plugin-vuetify'
+import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import { defu } from 'defu'
 import type { ModuleOptions, VuetifyOptions, VuetifyRuntimeConfig } from './types'
-import { addIconStyles, generateVuetifyConfigTemplate, normalizeNoExternal } from './utils'
+import { addIconStyles, generateVuetifyConfigTemplate } from './utils'
 
 // Re-export types
 export type { ModuleOptions } from './types'
@@ -201,18 +200,6 @@ export default defineNuxtModule<ModuleOptions>({
     prefetch: true,
     preload: true,
   },
-  onInstall(nuxt) {
-    // This runs only when the module is first installed
-    console.log('Setting up my-awesome-module for the first time!')
-
-    console.log(nuxt)
-
-    // You might want to:
-    // - Create initial configuration files
-    // - Set up database schemas
-    // - Display welcome messages
-    // - Perform initial data migration
-  },
   // Hooks shorthand
   hooks: {},
   // Setup function
@@ -221,19 +208,6 @@ export default defineNuxtModule<ModuleOptions>({
     const startTime = Date.now()
 
     logger.info('Starting Vuetify module setup...')
-
-    /* -----------------------------------------------
-     * Emit user-extensible hook: vuetify:register
-     * --------------------------------------------- */
-    try {
-      await nuxt.hooks.callHook('vuetify:registerModule', (config: Pick<ModuleOptions, 'vuetifyOptions'>) => {
-        console.log(config)
-      })
-      logger.info('vuetify:register hook completed')
-    }
-    catch (error) {
-      logger.warn('Error in vuetify:register hook:', error)
-    }
 
     /* -----------------------------------------------
      * Runtime Configuration
@@ -274,7 +248,12 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     /* -----------------------------------------------
-     * Auto Styles
+     * Add icon font CSS if not using SVG
+     * --------------------------------------------- */
+    addIconStyles(nuxt, options.vuetifyOptions?.icons)
+
+    /* -----------------------------------------------
+     * Auto Add Styles
      * --------------------------------------------- */
     // nuxt.options.css.push(resolver.resolve('./runtime/styles/main.scss'))
 
@@ -285,6 +264,24 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.options.build.transpile.push('vue')
     nuxt.options.build.transpile.push('vuetify')
     nuxt.options.build.transpile.push(resolver.resolve('./runtime'))
+
+    /* -----------------------------------------------
+     * Nuxt - Vuetify transformAssetUrls
+     * --------------------------------------------- */
+    if (options.transformAssetUrls) {
+      nuxt.options.vite.vue = nuxt.options.vite.vue || {}
+      nuxt.options.vite.vue.template = defu(nuxt.options.vite.vue.template || {}, {
+        transformAssetUrls: transformAssetUrls,
+      })
+    }
+
+    /* -----------------------------------------------
+     * Add type declarations (Nuxt 4 has improved TypeScript support)
+     * --------------------------------------------- */
+    nuxt.hook('prepare:types', ({ references }) => {
+      references.push({ types: 'vuetify' })
+      references.push({ path: resolver.resolve('./types.ts') })
+    })
 
     /* -----------------------------------------------
      * Add runtime plugin
@@ -317,22 +314,26 @@ export default defineNuxtModule<ModuleOptions>({
     })
 
     /* -----------------------------------------------
-     * Add icon font CSS if not using SVG
-     * --------------------------------------------- */
-    addIconStyles(nuxt, options.vuetifyOptions?.icons)
-
-    /* -----------------------------------------------
-     * Optimize Vite for Vuetify
+     * Vite for Vuetify
      * --------------------------------------------- */
     extendViteConfig((config) => {
-      config.optimizeDeps ||= {}
-      config.optimizeDeps.include ||= []
-      if (!config.optimizeDeps.include.includes('vuetify')) {
-        config.optimizeDeps.include.push('vuetify')
+      // Optimize
+      config.optimizeDeps = defu(config.optimizeDeps, { exclude: ['vuetify'] })
+      config.optimizeDeps = defu(config.optimizeDeps, { includes: ['vuetify'] })
+
+      // Prevent externalizing Vuetify for SSR/build
+      if (options.vuetifyOptions?.ssr) {
+        config.ssr ||= {}
+        config.ssr.noExternal = [
+          ...(Array.isArray(config.ssr.noExternal)
+            ? config.ssr.noExternal
+            : config.ssr.noExternal && typeof config.ssr.noExternal !== 'boolean'
+              ? [config.ssr.noExternal]
+              : []
+          ),
+          'vuetify',
+        ]
       }
-      // Enable CSS code splitting for faster initial load
-      config.build ||= {}
-      config.build.cssCodeSplit = true
     })
 
     /* -----------------------------------------------
@@ -341,19 +342,11 @@ export default defineNuxtModule<ModuleOptions>({
     if (options.autoImport) {
       addVitePlugin(vuetify({
         autoImport: options.autoImport,
-        styles: options.styles,
+        styles: typeof options.styles === 'object' && options.styles?.configFile
+          ? { configFile: resolver.resolve(options.styles.configFile) }
+          : (options.styles || true),
       }), {
         prepend: true,
-      })
-    }
-
-    /* -----------------------------------------------
-     * Nuxt - Prevent externalizing Vuetify for SSR/build
-     * --------------------------------------------- */
-    if (options.vuetifyOptions?.ssr) {
-      extendViteConfig((config) => {
-        config.ssr ||= {}
-        config.ssr.noExternal = [...normalizeNoExternal(config.ssr.noExternal), 'vuetify']
       })
     }
 
@@ -379,11 +372,6 @@ export default defineNuxtModule<ModuleOptions>({
       })
     }
 
-    // Add type declarations (Nuxt 4 has improved TypeScript support)
-    nuxt.hook('prepare:types', ({ references }) => {
-      references.push({ types: 'vuetify' })
-      references.push({ path: resolver.resolve('./types.ts') })
-    })
     // Log completion time in debug mode
     logger.info(`Vuetify module setup completed in ${Date.now() - startTime}ms`)
   },

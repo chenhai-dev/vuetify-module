@@ -47,13 +47,13 @@ export const moduleOptions = {
 `
 }
 // Helper: always returns an array of strings/regexes
-export const normalizeNoExternal = (value: unknown): (string | RegExp)[] => {
-  if (value === true) return [] // true = no externalizing restrictions
-  if (typeof value === 'string') return [value]
-  if (value instanceof RegExp) return [value]
-  if (Array.isArray(value)) return value
-  return []
-}
+// export const normalizeNoExternal = (value: unknown): (string | RegExp)[] => {
+//   if (value === true) return [] // true = no externalizing restrictions
+//   if (typeof value === 'string') return [value]
+//   if (value instanceof RegExp) return [value]
+//   if (Array.isArray(value)) return value
+//   return []
+// }
 
 /**
  * Create custom Vuetify options by merging with defaults

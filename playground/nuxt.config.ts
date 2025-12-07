@@ -1,3 +1,5 @@
+import { transformAssetUrls } from 'vite-plugin-vuetify'
+
 export default defineNuxtConfig({
   modules: ['../src/module'],
 
@@ -22,20 +24,9 @@ export default defineNuxtConfig({
     build: {
       // Enable CSS code splitting
       cssCodeSplit: true,
-      // Chunk size warnings threshold
-      chunkSizeWarningLimit: 1000,
-      rollupOptions: {
-        output: {
-          // Manual chunk splitting for better caching
-          manualChunks: {
-            'vuetify': ['vuetify'],
-            'vuetify-labs': ['vuetify/labs/components'],
-          },
-        },
-      },
     },
+
   },
-  debug: true,
   // Vuetify module configuration
   vuetify: {
     // ─────────────────────────────────────────────────────────────

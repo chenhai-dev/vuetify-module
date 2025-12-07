@@ -5,11 +5,14 @@ import { aliases, mdi } from 'vuetify/iconsets/mdi'
 import type { VuetifyOptions } from '../types'
 
 export default defineNuxtPlugin({
-  name: 'vuetify',
+  name: 'vuetify:nuxt:plugin',
+  parallel: true,
   enforce: 'pre', // Load before other plugins
   async setup(nuxtApp) {
     const runtimeConfig = useRuntimeConfig()
     const options: VuetifyOptions = runtimeConfig.public.vuetify as Partial<VuetifyOptions>
+
+    console.log('test', options)
 
     /*
     * Reconstruct full Vuetify config
@@ -33,6 +36,11 @@ export default defineNuxtPlugin({
     }
 
     /* -----------------------------------------------
+     * Hook: After configuration, before Vue integration
+     * --------------------------------------------- */
+    await nuxtApp.callHook('vuetify:configuration', { vuetifyOptions })
+
+    /* -----------------------------------------------
      * Emit before-create hook
      * Hook: Before Vuetify instance creation
      * Allows plugins/modules to modify options before creation
@@ -45,27 +53,18 @@ export default defineNuxtPlugin({
     const vuetify = createVuetify(vuetifyOptions)
 
     /* -----------------------------------------------
-     * Hook: After configuration, before Vue integration
-     * --------------------------------------------- */
-    await nuxtApp.callHook('vuetify:configuration', { vuetifyOptions })
-
-    /* -----------------------------------------------
      * Provide Vuetify to the Vue app
      * --------------------------------------------- */
     nuxtApp.vueApp.use(vuetify)
 
     /* -----------------------------------------------
+     * Expose Vuetify instance via provide/inject ($vuetify)
+     * --------------------------------------------- */
+    nuxtApp.provide('vuetify', vuetify)
+
+    /* -----------------------------------------------
      * Hook: Vuetify is ready and installed
      * --------------------------------------------- */
     await nuxtApp.callHook('vuetify:ready', vuetify)
-
-    /* -----------------------------------------------
-     * Expose Vuetify instance via provide/inject ($vuetify)
-     * --------------------------------------------- */
-    return {
-      provide: {
-        vuetify,
-      },
-    }
   },
 })
