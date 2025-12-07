@@ -34,11 +34,13 @@
     "test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
   },
   "dependencies": {
+    "@mdi/font": "^7.4.47",
     "@nuxt/kit": "^4.2.1",
-    "defu": "^6.1.4"
+    "defu": "^6.1.4",
+    "vite-plugin-vuetify": "^2.1.2",
+    "vuetify": "^3.11.2"
   },
   "devDependencies": {
-    "@mdi/font": "^7.4.47",
     "@nuxt/devtools": "^3.1.1",
     "@nuxt/eslint-config": "^1.11.0",
     "@nuxt/module-builder": "^1.0.2",
@@ -49,10 +51,8 @@
     "eslint": "^9.39.1",
     "nuxt": "^4.2.1",
     "typescript": "~5.9.3",
-    "vite-plugin-vuetify": "^2.1.2",
     "vitest": "^4.0.15",
-    "vue-tsc": "^3.1.5",
-    "vuetify": "^3.11.2"
+    "vue-tsc": "^3.1.5"
   },
   "overrides": {
     "@nuxt/test-utils": {

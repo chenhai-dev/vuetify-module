@@ -1,410 +1,390 @@
 import {
-    addComponentsDir,
-    addImports,
-    addPlugin,
-    addTemplate,
-    createResolver,
-    defineNuxtModule, useLogger
+  defineNuxtModule,
+  addPlugin,
+  createResolver,
+  extendViteConfig,
+  extendWebpackConfig,
+  addImportsDir, addVitePlugin, addTemplate, useLogger, addComponentsDir,
 } from '@nuxt/kit'
-import {md1} from "vuetify/blueprints";
-import {transformAssetUrls} from "vite-plugin-vuetify";
-import {defu} from 'defu'
-import type {HookResult} from "@nuxt/schema";
-import type { ModuleOptions,VuetifyConfig, VuetifyOptions} from "./types";
-import {generateVuetifyConfig} from "./utils/vuetifyConfig";
-import {viteConfig} from "./utils/configure-vite";
+import type { Nuxt } from '@nuxt/schema'
+import vuetify from 'vite-plugin-vuetify'
+import { defu } from 'defu'
+import type { ModuleOptions, VuetifyOptions, VuetifyRuntimeConfig } from './types'
+import { addIconStyles, generateVuetifyConfigTemplate, normalizeNoExternal } from './utils'
 
+// Re-export types
+export type { ModuleOptions } from './types'
 
-export interface ModuleHooks {
-    'vuetify:config': (config: VuetifyConfig) => HookResult
+/**
+ * Default Vuetify configuration optimized for performance
+ */
+const defaultVuetifyOptions: VuetifyOptions = {
+  aliases: {},
+  defaults: {
+    global: {
+      ripple: true,
+    },
+    // Buttons
+    VBtn: {
+      color: 'primary',
+      density: 'default',
+      variant: 'elevated',
+    },
+    // Cards
+    VCard: {
+      variant: 'elevated',
+    },
+    // Form inputs - compact and consistent
+    VTextField: {
+      density: 'comfortable',
+      variant: 'outlined',
+      hideDetails: 'auto',
+    },
+    VTextarea: {
+      density: 'comfortable',
+      variant: 'outlined',
+      hideDetails: 'auto',
+    },
+    VSelect: {
+      density: 'comfortable',
+      variant: 'outlined',
+      hideDetails: 'auto',
+    },
+    VAutocomplete: {
+      density: 'comfortable',
+      variant: 'outlined',
+      hideDetails: 'auto',
+    },
+    VCombobox: {
+      density: 'comfortable',
+      variant: 'outlined',
+      hideDetails: 'auto',
+    },
+    VCheckbox: {
+      color: 'primary',
+      density: 'comfortable',
+      hideDetails: 'auto',
+    },
+    VRadio: {
+      color: 'primary',
+      density: 'comfortable',
+    },
+    VRadioGroup: {
+      color: 'primary',
+      density: 'comfortable',
+      hideDetails: 'auto',
+    },
+    VSwitch: {
+      color: 'primary',
+      density: 'comfortable',
+      hideDetails: 'auto',
+    },
+    VFileInput: {
+      density: 'comfortable',
+      variant: 'outlined',
+      hideDetails: 'auto',
+    },
+    // Lists
+    VList: {
+      density: 'comfortable',
+    },
+    VListItem: {
+      density: 'comfortable',
+    },
+    // Tabs
+    VTab: {
+      sliderColor: 'primary',
+    },
+    VTabs: {
+      color: 'primary',
+    },
+    // Data tables
+    VDataTable: {
+      fixedHeader: true,
+    },
+    // Dialogs
+    VDialog: {
+      scrim: 'rgba(0, 0, 0, 0.5)',
+    },
+    // Navigation
+    VNavigationDrawer: {
+      touchless: false,
+    },
+    // Tooltips
+    VTooltip: {
+      location: 'top',
+    },
+  },
+  theme: {
+    defaultTheme: 'light',
+    themes: {
+      light: {
+        dark: false,
+        colors: {
+          // Primary colors
+          'primary': '#1976D2',
+          'primary-darken-1': '#1565C0',
+          'secondary': '#424242',
+          'secondary-darken-1': '#3d3d3d',
+          // Semantic colors
+          'accent': '#82B1FF',
+          'error': '#FF5252',
+          'info': '#2196F3',
+          'success': '#4CAF50',
+          'warning': '#FB8C00',
+          // Surface colors
+          'background': '#FAFAFA',
+          'surface': '#FFFFFF',
+          'surface-bright': '#FFFFFF',
+          'surface-variant': '#E0E0E0',
+          'on-surface-variant': '#424242',
+        },
+      },
+      dark: {
+        dark: true,
+        colors: {
+          // Color
+          'primary': '#2196F3',
+          'primary-darken-1': '#1E88E5',
+          'secondary': '#424242',
+          'secondary-darken-1': '#3d3d3d',
+          'accent': '#FF4081',
+          'error': '#FF5252',
+          'info': '#2196F3',
+          'success': '#4CAF50',
+          'warning': '#FB8C00',
+          // Background
+          'background': '#121212',
+          'surface': '#212121',
+          'surface-bright': '#2C2C2C',
+          'surface-variant': '#424242',
+          'on-surface-variant': '#EEEEEE',
+        },
+      },
+    },
+  },
+  locale: {
+    locale: 'en',
+    fallback: 'en',
+    // messages: { en, km },
+  },
+  ssr: true,
 }
 
-const logger = useLogger(`nuxt:vuetify`)
+const logger = useLogger(`nuxt:vutify-module`)
+
 export default defineNuxtModule<ModuleOptions>({
-    meta: {
-        name: 'vuetify-module',
-        configKey: 'vuetify',
-        compatibility: {
-            nuxt: '^3.9.0 || ^4.0.0',
-        },
+  meta: {
+    name: 'vuetify-module',
+    configKey: 'vuetify',
+    // strictly require Nuxt 4 compatible versions
+    compatibility: {
+      nuxt: '^4.0.0',
     },
-
-    // Default configuration options of the Nuxt module
-    defaults: {
-        defaultTheme: 'light',
-        themes: {
-            light: {
-                dark: false,
-                colors: {
-                    // Color
-                    primary: '#1976D2',
-                    secondary: '#424242',
-                    accent: '#82B1FF',
-                    error: '#FF5252',
-                    info: '#2196F3',
-                    success: '#4CAF50',
-                    warning: '#FB8C00',
-                    //Background
-                    background: '#FAFAFA',
-                    surface: '#FFFFFF',
-                },
-            },
-            dark: {
-                dark: true,
-                colors: {
-                    // Color
-                    primary: '#2196F3',
-                    secondary: '#424242',
-                    accent: '#FF4081',
-                    error: '#FF5252',
-                    info: '#2196F3',
-                    success: '#4CAF50',
-                    warning: '#FB8C00',
-                    //Background
-                    background: '#121212',
-                    surface: '#212121',
-                },
-            },
-        },
-        aliases: {},
-        // Default Component - Props
-        defaults: {
-
-        },
-        blueprint:md1,
-        // Icon
-        icons: {
-            defaultSet: 'mdi',
-            aliases:{},
-            useSvg: false,
-        },
-        //SSR
-        ssr: {
-            clientWidth: 1920,
-            clientHeight: 1080,
-        },
-        // Style
-        styles: {
-            disableVuetifyStyles: false,
-        },
-        performance: {
-            treeShaking: true,
-            prefetch: false,
-        },
-        transformAssetUrls: true,
+  },
+  // Default configuration of Nuxt Module
+  defaults: {
+    vuetifyOptions: defaultVuetifyOptions,
+    // Style options
+    styles: true,
+    disableVuetifyStyles: false,
+    // automatic tree-shaking Vuetify components and directives, also include labs or Ignoring components or directives
+    // autoImport: true,
+    autoImport: {
+      labs: true,
     },
+    // Feature options
+    importComposables: true,
+    prefixComposables: true,
+    transformAssetUrls: true,
+    // Performance
+    prefetch: true,
+    preload: true,
+  },
+  onInstall(nuxt) {
+    // This runs only when the module is first installed
+    console.log('Setting up my-awesome-module for the first time!')
 
-    // Setup function
-    async setup(options, nuxt) {
+    console.log(nuxt)
 
-        const resolver = createResolver(import.meta.url)
+    // You might want to:
+    // - Create initial configuration files
+    // - Set up database schemas
+    // - Display welcome messages
+    // - Perform initial data migration
+  },
+  // Hooks shorthand
+  hooks: {},
+  // Setup function
+  async setup(options: ModuleOptions, nuxt: Nuxt) {
+    const resolver = createResolver(import.meta.url)
+    const startTime = Date.now()
 
-        // ============================================
-        // CSS Configuration
-        // ============================================
-        // Add Vuetify CSS (unless disabled)
-        if (!options.styles?.disableVuetifyStyles) {
-            nuxt.options.css.push('vuetify/styles')
+    logger.info('Starting Vuetify module setup...')
+
+    /* -----------------------------------------------
+     * Emit user-extensible hook: vuetify:register
+     * --------------------------------------------- */
+    try {
+      await nuxt.hooks.callHook('vuetify:registerModule', (config: Pick<ModuleOptions, 'vuetifyOptions'>) => {
+        console.log(config)
+      })
+      logger.info('vuetify:register hook completed')
+    }
+    catch (error) {
+      logger.warn('Error in vuetify:register hook:', error)
+    }
+
+    /* -----------------------------------------------
+     * Runtime Configuration
+     * --------------------------------------------- */
+    const runtimeConfig: VuetifyRuntimeConfig = {
+      aliases: options.vuetifyOptions.aliases!,
+      defaults: options.vuetifyOptions.defaults!,
+      theme: options.vuetifyOptions.theme!,
+      icons: options.vuetifyOptions.icons!,
+      locale: options.vuetifyOptions.locale!,
+      ssr: options.vuetifyOptions.ssr!,
+    }
+    nuxt.options.runtimeConfig.public.vuetify = defu(
+      nuxt.options.runtimeConfig.public.vuetify || {},
+      runtimeConfig,
+    )
+
+    // Generate Vuetify configuration template
+    addTemplate({
+      filename: 'vuetify-options.mjs',
+      getContents: () => generateVuetifyConfigTemplate(options),
+    })
+
+    /* -----------------------------------------------
+     * disable inline styles when SSR enabled
+     * --------------------------------------------- */
+    if (options.vuetifyOptions.ssr && !!options.styles && typeof options.styles === 'object') {
+      nuxt.options.features.inlineStyles = false
+    }
+
+    /* -----------------------------------------------
+     * Add Vuetify styles
+     * --------------------------------------------- */
+
+    if (!options.disableVuetifyStyles) {
+      nuxt.options.css ??= []
+      nuxt.options.css.unshift('vuetify/styles')
+    }
+
+    /* -----------------------------------------------
+     * Auto Styles
+     * --------------------------------------------- */
+    // nuxt.options.css.push(resolver.resolve('./runtime/styles/main.scss'))
+
+    /* -----------------------------------------------
+     * Nuxt - Build Config
+     * --------------------------------------------- */
+    nuxt.options.build.transpile ||= []
+    nuxt.options.build.transpile.push('vue')
+    nuxt.options.build.transpile.push('vuetify')
+    nuxt.options.build.transpile.push(resolver.resolve('./runtime'))
+
+    /* -----------------------------------------------
+     * Add runtime plugin
+     * --------------------------------------------- */
+    addPlugin({
+      src: resolver.resolve('./runtime/plugin'),
+      mode: 'all',
+    })
+
+    /* -----------------------------------------------
+     * Auto Composables Import
+     * --------------------------------------------- */
+    addImportsDir(resolver.resolve('runtime/composables'))
+    if (options.importComposables) {
+      // Add Vuetify composables directly
+      nuxt.hook('imports:extend', (imports) => {
+        const vuetifyComposables = ['useDate', 'useDefaults', 'useDisplay', 'useGoTo', 'useHotkey', 'useLayout', 'useLocale', 'useMask', 'useRtl', 'useTheme']
+        vuetifyComposables.forEach((name) => {
+          imports.push({ name, from: 'vuetify' })
+        })
+      })
+    }
+    /* -----------------------------------------------
+     * Auto Component Import (VBtn, VCard, etc.)
+     * --------------------------------------------- */
+    addComponentsDir({
+      path: resolver.resolve('./runtime/components'),
+      pathPrefix: false,
+      prefix: 'V',
+    })
+
+    /* -----------------------------------------------
+     * Add icon font CSS if not using SVG
+     * --------------------------------------------- */
+    addIconStyles(nuxt, options.vuetifyOptions?.icons)
+
+    /* -----------------------------------------------
+     * Optimize Vite for Vuetify
+     * --------------------------------------------- */
+    extendViteConfig((config) => {
+      config.optimizeDeps ||= {}
+      config.optimizeDeps.include ||= []
+      if (!config.optimizeDeps.include.includes('vuetify')) {
+        config.optimizeDeps.include.push('vuetify')
+      }
+      // Enable CSS code splitting for faster initial load
+      config.build ||= {}
+      config.build.cssCodeSplit = true
+    })
+
+    /* -----------------------------------------------
+     * Auto Tree-Shaking (recommended by Vuetify team)
+     * --------------------------------------------- */
+    if (options.autoImport) {
+      addVitePlugin(vuetify({
+        autoImport: options.autoImport,
+        styles: options.styles,
+      }), {
+        prepend: true,
+      })
+    }
+
+    /* -----------------------------------------------
+     * Nuxt - Prevent externalizing Vuetify for SSR/build
+     * --------------------------------------------- */
+    if (options.vuetifyOptions?.ssr) {
+      extendViteConfig((config) => {
+        config.ssr ||= {}
+        config.ssr.noExternal = [...normalizeNoExternal(config.ssr.noExternal), 'vuetify']
+      })
+    }
+
+    // Nitro config
+    nuxt.hook('nitro:config', (nitroConfig) => {
+      nitroConfig.externals = nitroConfig.externals || {}
+      nitroConfig.externals.inline = nitroConfig.externals.inline || []
+      nitroConfig.externals.inline.push('vuetify')
+    })
+
+    /* -----------------------------------------------
+     * Prefetch & Preload Vuetify chunks for faster navigation
+     * --------------------------------------------- */
+    if (options.prefetch || options.preload) {
+      nuxt.hook('build:manifest', (manifest) => {
+        for (const key in manifest) {
+          const entry = manifest[key]
+          if (entry?.file?.includes('vuetify')) {
+            if (options.prefetch) entry.prefetch = true
+            if (options.preload) entry.preload = true
+          }
         }
-        // Add icon font CSS if not using SVG
-        if (!options.icons?.useSvg) {
-            nuxt.options.css.push('@mdi/font/css/materialdesignicons.css')
-        }
+      })
+    }
 
-
-        // ============================================
-        // Vite Configuration for Vuetify
-        // ============================================
-
-        nuxt.options.vite=viteConfig(nuxt.options.vite,options)
-
-        // ============================================
-        // Vue Configuration
-        // ============================================
-
-        // Transform asset URLs for Vuetify components (v-img, v-card, etc.)
-        if (options.transformAssetUrls !== false) {
-            nuxt.options.vue = nuxt.options.vue || {}
-            nuxt.options.vue = nuxt.options.vue || {}
-            nuxt.options.vue.transformAssetUrls = transformAssetUrls
-        }
-
-
-        // ============================================
-        // Features Configuration for Vuetify SSR
-        // ============================================
-
-        // IMPORTANT: If using SASS configFile with SSR, disable inlineStyles
-        // @see https://vuetify-nuxt-module.netlify.app/guide/server-side-rendering.html
-        if (options.styles?.configFile && nuxt.options.ssr) {
-            nuxt.options.features = nuxt.options.features || {}
-            nuxt.options.features.inlineStyles = false
-        }
-
-
-        // ============================================
-        // Build Configuration
-        // ============================================
-
-        // Add Vuetify to transpile
-        nuxt.options.build.transpile.push('vuetify')
-
-        // Prefetch Vuetify chunks for faster navigation
-        if (options.performance?.prefetch) {
-            nuxt.hook('build:manifest', (manifest) => {
-                for (const key in manifest) {
-                    const entry = manifest[key]
-                    if (entry?.file?.includes('vuetify')) {
-                        entry.prefetch = true
-                    }
-                }
-            })
-        }
-
-        // ============================================
-        // Runtime Configuration
-        // ============================================
-        // Expose options to public runtime config
-        nuxt.options.runtimeConfig.public.vuetify = defu(
-            nuxt.options.runtimeConfig.public.vuetify || {},
-            options
-        )
-        // Expose options to private runtime config
-        nuxt.options.runtimeConfig.vuetify = defu(
-            nuxt.options.runtimeConfig.vuetify || {},
-            options
-        )
-
-        const resolvedConfig: VuetifyConfig = {
-            themes: options.themes,
-            defaults: options.defaults,
-            icons: options.icons,
-            aliases: options.aliases,
-        }
-
-        // Build VuetifyOptions for config generation
-        const vuetifyOptions: VuetifyOptions = {
-            defaultTheme: options.defaultTheme || 'light',
-            themes: resolvedConfig.themes || {},
-            aliases: resolvedConfig.aliases || {},
-            defaults: resolvedConfig.defaults || {},
-            icons: resolvedConfig.icons || {defaultSet: 'mdi'},
-            ssr: options.ssr || false,
-            blueprint: options.blueprint || md1,
-            labComponents: options.labComponents || false,
-        }
-
-        // Generate Vuetify configuration template
-        addTemplate({
-            filename: 'vuetify-config.mjs',
-            getContents: () => generateVuetifyConfig(
-                options,
-                resolvedConfig.themes,
-                vuetifyOptions
-            ),
-        })
-
-        // ============================================
-        // Vuetify Plugin
-        // ============================================
-        addPlugin({
-            src: resolver.resolve('./runtime/plugins/vuetify'),
-            mode: 'all',
-        })
-
-        // ============================================
-        // Auto-import Composables
-        // ============================================
-        addImports([
-            {
-                name: 'useVTheme',
-                from: resolver.resolve('./runtime/composables/useVTheme'),
-            },
-            {
-                name: 'useVDefaults',
-                from: resolver.resolve('./runtime/composables/useVDefaults'),
-            },
-            {
-                name: 'useAppTheme',
-                from: resolver.resolve('./runtime/composables/useTheme'),
-            },
-            {
-                name: 'useSnackbar',
-                from: resolver.resolve('./runtime/composables/useSnackbar'),
-            },
-            {
-                name: 'useConfirmDialog',
-                from: resolver.resolve('./runtime/composables/useConfirmDialog'),
-            },
-            {
-                name: 'useBreakpoints',
-                from: resolver.resolve('./runtime/composables/useBreakpoints'),
-            },
-            {
-                name: 'useLoading',
-                from: resolver.resolve('./runtime/composables/useLoading'),
-            },
-        ])
-
-        // ============================================
-        // Hook: components:dirs - Component directory registration
-        // ============================================
-        // nuxt.hook('components:dirs', (dirs) => {
-        //     dirs.push({
-        //         path: resolver.resolve('./runtime/components'),
-        //         prefix: 'Vuetify',
-        //         pathPrefix: false,
-        //     })
-        //     logger.info('Registered Vuetify component directories')
-        // })
-        // Add custom components
-        addComponentsDir({
-            path: resolver.resolve('runtime/components'),
-        })
-
-        // Add type declarations (Nuxt 4 has improved TypeScript support)
-        nuxt.hook('prepare:types', ({references}) => {
-            references.push({
-                types: 'vuetify',
-            })
-        })
-
-        // ============================================
-        // Hook: imports:extend - Auto-import configuration
-        // ============================================
-        nuxt.hook('imports:extend', (imports) => {
-            imports.push({
-                name: 'useDisplay',
-                from: 'vuetify',
-            })
-            imports.push({
-                name: 'useTheme',
-                from: 'vuetify',
-            })
-            logger.info('Extended auto-imports for Vuetify')
-        })
-
-        // ============================================
-        // Hook: vite:extendConfig - Vite optimization for Vuetify
-        // ============================================
-        nuxt.hook('vite:extendConfig', (config) => {
-            // Ensure CSS code splitting is enabled
-            if (config.build) {
-                config.build.cssCodeSplit = true
-            }
-
-            // Add Vuetify to optimizeDeps for faster dev startup
-            if (config.optimizeDeps) {
-                config.optimizeDeps.include = config.optimizeDeps.include || []
-                if (!config.optimizeDeps.include.includes('vuetify')) {
-                    config.optimizeDeps.include.push('vuetify')
-                }
-            }
-
-            logger.info('Extended Vite config for Vuetify optimization')
-        })
-        // ============================================
-        // Hook: nitro:config - SSR configuration
-        // ============================================
-        nuxt.hook('nitro:config', (nitroConfig) => {
-            // Note: Both Vite SSR noExternal and Nitro externals.inline
-            // are needed for proper SSR bundling of Vuetify
-            nitroConfig.externals = nitroConfig.externals || {}
-            nitroConfig.externals.inline = nitroConfig.externals.inline || []
-            if (Array.isArray(nitroConfig.externals.inline)) {
-                nitroConfig.externals.inline.push('vuetify')
-            }
-
-            logger.info('Configured Nitro for Vuetify SSR')
-        })
-
-        // Log setup completion in dev mode
-        if (nuxt.options.dev) {
-            logger.success('✅ Vuetify Module (Nuxt 4) initialized')
-        }
-        // ============================================
-        // Hook: build:before - Build lifecycle start
-        // ============================================
-        nuxt.hook('build:before', () => {
-            logger.info('Starting build with Vuetify module...')
-        })
-
-        // ============================================
-        // Hook: build:done - Build lifecycle complete
-        // ============================================
-        nuxt.hook('build:done', () => {
-            logger.success('Build completed with Vuetify module')
-        })
-
-        // ============================================
-        // Hook: modules:done - Module completion
-        // ============================================
-        nuxt.hook('modules:done', async () => {
-            await nuxt.callHook('vuetify:config', {
-                themes: options.themes,
-                defaults: options.defaults,
-                icons: options.icons,
-                aliases: options.aliases,
-            })
-            logger.info('All modules loaded, Vuetify module initialized')
-        })
-
-        // ============================================
-        // Hook: ready - App lifecycle ready
-        // ============================================
-        nuxt.hook('ready', () => {
-            logger.success('Nuxt app ready with Vuetify module')
-        })
-
-        // ============================================
-        // Hook: close - App lifecycle close
-        // ============================================
-        nuxt.hook('close', () => {
-            logger.info('Closing Nuxt app with Vuetify module')
-        })
-    },
+    // Add type declarations (Nuxt 4 has improved TypeScript support)
+    nuxt.hook('prepare:types', ({ references }) => {
+      references.push({ types: 'vuetify' })
+      references.push({ path: resolver.resolve('./types.ts') })
+    })
+    // Log completion time in debug mode
+    logger.info(`Vuetify module setup completed in ${Date.now() - startTime}ms`)
+  },
 })
-
-// Declare module augmentation for Nuxt 4
-declare module 'nuxt/schema' {
-    interface NuxtConfig {
-        vuetify?: ModuleOptions
-    }
-
-    interface NuxtHooks {
-        'vuetify:config': (config: VuetifyConfig) => HookResult
-    }
-}
-
-declare module '@nuxt/schema' {
-    interface NuxtApp {
-        $vuetify: ReturnType<typeof import('vuetify')['createVuetify']>
-    }
-
-    interface NuxtHooks {
-        'vuetify:config': (config: VuetifyConfig) => HookResult
-    }
-
-    interface NuxtConfig {
-        vuetify?: ModuleOptions
-    }
-
-    // interface NuxtOptions {
-    //     vuetify?: ModuleOptions
-    // }
-
-    interface PublicRuntimeConfig {
-        vuetify: VuetifyOptions
-    }
-
-    interface RuntimeConfig {
-        vuetify: VuetifyOptions,
-        public: PublicRuntimeConfig
-    }
-}
-
-// declare module '#app' {
-//     interface NuxtApp {
-//         $vuetify: ReturnType<typeof import('vuetify')['createVuetify']>
-//     }
-// }

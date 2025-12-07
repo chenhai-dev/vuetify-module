@@ -1,190 +1,249 @@
 import type {
-    ThemeDefinition,
-    IconOptions,
-    Blueprint,
-    Anchor
+  Anchor,
+  VuetifyOptions as VOptions, createVuetify,
 } from 'vuetify'
-import type {DefaultsInstance} from "vuetify/framework";
+import type { HookResult } from '@nuxt/schema'
+import type * as Components from 'vuetify/components'
+import type * as Directives from 'vuetify/directives'
 
-export type { ThemeDefinition,IconOptions}
-export type DefaultsOptions = Partial<DefaultsInstance>
-export type SSROptions = boolean | {
-    clientWidth: number;
-    clientHeight?: number;
-};
+/**
+ * Module-level configuration options
+ */
 
-// Module options interface
-export interface ModuleOptions {
+export interface VuetifyModuleOptions {
+  /**
+   * Enable/disable Vuetify styles
+   * - true: Use compiled CSS (default)
+   * - 'sass': Use SASS source for customization
+   * - false: Disable styles
+   * @default true
+   */
+  styles?: true | 'none' | 'sass' | {
+    configFile: string
+  }
 
-    /**
-     * Default theme name
-     * @default 'light'
-     */
-    defaultTheme?: 'light' | 'dark' | 'system' | (string & {});
+  /**
+   * The module will add `vuetify/styles` in Nuxt `css` option.
+   * Disable default Vuetify styles
+   * @default false
+   */
+  disableVuetifyStyles?: boolean
 
-    /**
-     * Custom theme definitions
-     */
-    themes?: Record<string, ThemeDefinition>;
+  /**
+   * Enable automatic tree-shaking via vite-plugin-vuetify
+   * Vuetify components and directives will be automatically imported
+   * include lab when autoImport:{labs:true}
+   * Ignoring components or directives: autoImport:{ignore:[Component name and Directive name here]}
+   * @default true
+   */
+  autoImport?: boolean | {
+    labs?: boolean
+    ignore?: (keyof typeof Components | keyof typeof Directives)[]
+  }
 
-    /**
-     * Component Register - Custom from Vuetify
-     * aliases: {
-     *    VButton: 'VBtn'
-     * }
-     */
-    aliases?:Record<string, unknown>
+  /**
+   * Auto-import Vuetify composables
+   * @default true
+   */
+  importComposables?: boolean
 
-    /**
-     * Default component props
-     */
-    defaults?: DefaultsOptions
+  /**
+   * If you are using another composables that collide with the Vuetify ones,
+   * enable this flag to prefix them with `V`:
+   * - `useLocale` -> `useVLocale`
+   * - `useDefaults` -> `useVDefaults`
+   * - `useDisplay` -> `useVDisplay`
+   * - `useLayout` -> `useVLayout`
+   * - `useRtl` -> `useVRtl`
+   * - `useTheme` -> `useVTheme`
+   *
+   * @default false
+   */
+  prefixComposables?: boolean
 
-    /**
-     * Blueprint preset name
-     */
-    blueprint?: Blueprint
+  /**
+   * Transform asset URLs in Vuetify components
+   * @default true
+   */
+  transformAssetUrls?: boolean
 
-    /**
-     * Icon configuration
-     */
-    icons?:IconOptions & {
-        /**
-         * Use SVG icons for better performance
-         * @default false
-         */
-        useSvg?: boolean
-    }
+  /**
+   * Prefetch Vuetify chunks for faster navigation
+   * @default true
+   */
+  prefetch?: boolean
 
-    /**
-     * SSR configuration
-     */
-    ssr?: SSROptions
-
-    /**
-     * SASS/SCSS customization
-     */
-    styles?: {
-        /**
-         * Path to custom SASS variables file
-         */
-        configFile?: string
-
-        /**
-         * Disable default Vuetify styles
-         * @default false
-         */
-        disableVuetifyStyles?: boolean
-    }
-
-    /**
-     * Performance optimizations
-     */
-    performance?: {
-        /**
-         * Enable tree shaking
-         * @default true
-         */
-        treeShaking?: boolean
-
-        /**
-         * Prefetch components
-         * @default false
-         */
-        prefetch?: boolean
-    }
-    /**
-     * Enable lab components (experimental)
-     * @default false
-     */
-    labComponents?: boolean
-    /**
-     * Enable transform asset url
-     * @default false
-     */
-    transformAssetUrls?:boolean
+  /**
+   * Preload critical Vuetify chunks
+   * @default true
+   */
+  preload?: boolean
 
 }
 
-// VuetifyOptions configuration
-export interface VuetifyOptions {
-    defaultTheme: Exclude<ModuleOptions['defaultTheme'], undefined>
-    themes: Exclude<ModuleOptions['themes'], undefined>
-    aliases: Exclude<ModuleOptions['aliases'], undefined>
-    defaults: Exclude<ModuleOptions['defaults'], undefined>
-    icons: Exclude<ModuleOptions['icons'], undefined>
-    ssr: Exclude<ModuleOptions['ssr'], undefined>
-    blueprint: Exclude<ModuleOptions['blueprint'], undefined>
-    labComponents: Exclude<ModuleOptions['labComponents'], undefined>
+/**
+ * Vuetify instance configuration
+ */
+export interface VuetifyOptions extends Partial<Omit<VOptions, 'aliases' | 'theme'>> {
+  /**
+   * Component aliases (e.g., { VButton: VBtn , MyButton: 'VBtn'})
+   */
+  aliases?: Record<string, keyof typeof import('vuetify/components')> | Record<string, string>
+
+  /**
+   * Theme configuration
+   */
+  theme?: Exclude<VOptions['theme'], false>
+
 }
 
-// Resolved configuration
-export interface VuetifyConfig {
-    themes: ModuleOptions['themes']
-    defaults: ModuleOptions['defaults']
-    icons: ModuleOptions['icons']
-    aliases: ModuleOptions['aliases']
+/**
+ * Vuetify Runtime configuration
+ */
+export interface VuetifyRuntimeConfig {
+  aliases?: Exclude<VuetifyOptions['aliases'], undefined>
+  date?: Exclude<VuetifyOptions['date'], undefined>
+  defaults?: Exclude<VuetifyOptions['defaults'], undefined>
+  display?: Exclude<VuetifyOptions['display'], undefined>
+  theme?: Exclude<VuetifyOptions['theme'], undefined>
+  icons?: Omit<Exclude<VuetifyOptions['icons'], undefined>, 'aliases' | 'sets'>
+  locale?: Exclude<VuetifyOptions['locale'], undefined>
+  ssr?: Exclude<VuetifyOptions['ssr'], undefined>
+}
+
+/**
+ * Module options
+ */
+export interface ModuleOptions extends VuetifyModuleOptions {
+  vuetifyOptions: VuetifyOptions
+}
+export interface ModulePublicRuntimeConfig {
+  vuetify: Partial<VuetifyRuntimeConfig>
+}
+
+// Hook Definition
+export interface ModuleHooks {
+  'vuetify:registerModule': (registerModule: (config: VuetifyOptions) => void) => HookResult
+}
+
+export interface ModuleRuntimeHooks {
+  'vuetify:before-create': (ctx: { vuetifyOptions: VuetifyOptions }) => HookResult
+  'vuetify:configuration': (ctx: { vuetifyOptions: VuetifyOptions }) => HookResult
+  'vuetify:ready': (vuetify: ReturnType<typeof createVuetify>) => HookResult
+}
+// Used by module for type inference
+declare module '#app' {
+  interface NuxtApp {
+    $vuetify: ReturnType<typeof createVuetify>
+    $config: {
+      public: {
+        vuetify: Partial<VuetifyOptions>
+      }
+    }
+  }
+  interface RuntimeNuxtHooks extends ModuleRuntimeHooks {
+    'vuetify:ready': (vuetify: ReturnType<typeof createVuetify>) => HookResult
+  }
+}
+
+// Augment Nuxt schema types
+declare module '@nuxt/schema' {
+  interface NuxtConfig {
+    ['vuetify']?: Partial<ModuleOptions>
+  }
+  interface NuxtOptions {
+    ['vuetify']: Partial<ModuleOptions>
+  }
+
+  interface NuxtHooks extends ModuleHooks {
+    'vuetify:registerModule': (registerModule: (config: Pick<ModuleOptions, 'vuetifyOptions'>) => void) => HookResult
+  }
+  interface PublicRuntimeConfig extends ModulePublicRuntimeConfig {
+    vuetify: {
+      icons: {
+        defaultSet: string
+      }
+    }
+  }
+}
+
+declare module 'nuxt/schema' {
+  interface PublicRuntimeConfig extends ModulePublicRuntimeConfig {
+    vuetify: {
+      icons: {
+        defaultSet: string
+      }
+    }
+  }
+  interface NuxtHooks extends ModuleHooks {
+    'vuetify:registerModule': (registerModule: (config: Pick<ModuleOptions, 'vuetifyOptions'>) => void) => HookResult
+  }
+}
+
+// Augment #app types
+
+declare module '@vue/runtime-core' {
+  interface ComponentCustomProperties {
+    $vuetify: ReturnType<typeof createVuetify>
+  }
 }
 
 /**
  * Snackbar options for show() method
  */
 export interface SnackbarOptions {
-    message: string
-    color?: 'success' | 'error' | 'info' | 'warning' | string
-    timeout?: number
-    location?: Anchor
-    icon?: string
+  message: string
+  color?: 'success' | 'error' | 'info' | 'warning' | string
+  timeout?: number
+  location?: Anchor
+  icon?: string
 }
 
 /**
  * Snackbar state interface
  */
 export interface SnackbarState {
-    visible: boolean
-    message: string
-    color: string
-    timeout: number
-    location: Anchor
-    icon?: string
+  visible: boolean
+  message: string
+  color: string
+  timeout: number
+  location: Anchor
+  icon?: string
 }
 
 /**
  * Confirm dialog options
  */
 export interface ConfirmDialogOptions {
-    title?: string
-    message: string
-    confirmText?: string
-    cancelText?: string
-    confirmColor?: string
-    cancelColor?: string
-    persistent?: boolean
+  title?: string
+  message: string
+  confirmText?: string
+  cancelText?: string
+  confirmColor?: string
+  cancelColor?: string
+  persistent?: boolean
 }
 
 /**
  * Confirm dialog state interface
  */
 export interface ConfirmDialogState {
-    visible: boolean
-    title: string
-    message: string
-    confirmText: string
-    cancelText: string
-    confirmColor: string
-    cancelColor: string
-    persistent: boolean
+  visible: boolean
+  title: string
+  message: string
+  confirmText: string
+  cancelText: string
+  confirmColor: string
+  cancelColor: string
+  persistent: boolean
 }
-
-/**
- * Breakpoint names
- */
-export type BreakpointName = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
 
 /**
  * Loading state options
  */
 export interface LoadingOptions {
-    text?: string
-    color?: string
+  text?: string
+  color?: string
 }
+
+export {}
