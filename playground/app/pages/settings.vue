@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref} from "vue";
+import { ref } from 'vue'
 
 const { global, isDark, availableThemes, setTheme, toggle, colors } = useVTheme()
 const { defaults, setComponentDefault, resetAllDefaults, presets, applyPreset } = useVDefaults()
@@ -42,63 +42,86 @@ const presetsList = Object.keys(presets)
 
 <template>
   <div>
-    <h1 class="text-h4 mb-6">Settings</h1>
+    <h1 class="text-h4 mb-6">
+      Settings
+    </h1>
 
     <v-row>
       <!-- Theme Settings -->
-      <v-col cols="12" lg="6">
+      <v-col
+        cols="12"
+        lg="6"
+      >
         <v-card>
           <v-card-title>
-            <v-icon class="mr-2">mdi-palette</v-icon>
+            <v-icon class="mr-2">
+              mdi-palette
+            </v-icon>
             Theme Settings
           </v-card-title>
           <v-card-text>
             <v-list>
               <v-list-subheader>Select Theme</v-list-subheader>
               <v-list-item
-                  v-for="themeName in availableThemes"
-                  :key="themeName"
-                  :active="global.name.value === themeName"
-                  @click="setTheme(themeName)"
+                v-for="themeName in availableThemes"
+                :key="themeName"
+                :active="global.name.value === themeName"
+                @click="setTheme(themeName)"
               >
                 <template #prepend>
-                  <v-avatar size="32" :color="themeName === 'dark' ? 'grey-darken-4' : 'grey-lighten-2'">
+                  <v-avatar
+                    size="32"
+                    :color="themeName === 'dark' ? 'grey-darken-4' : 'grey-lighten-2'"
+                  >
                     <v-icon size="small">
                       {{ themeName === 'dark' ? 'mdi-moon-waning-crescent' : 'mdi-white-balance-sunny' }}
                     </v-icon>
                   </v-avatar>
                 </template>
-                <v-list-item-title class="text-capitalize">{{ themeName }}</v-list-item-title>
+                <v-list-item-title class="text-capitalize">
+                  {{ themeName }}
+                </v-list-item-title>
               </v-list-item>
             </v-list>
 
             <v-divider class="my-4" />
 
             <v-switch
-                :model-value="isDark"
-                label="Dark Mode"
-                color="primary"
-                @update:model-value="toggle"
+              :model-value="isDark"
+              label="Dark Mode"
+              color="primary"
+              @update:model-value="toggle"
             />
           </v-card-text>
         </v-card>
 
         <v-card class="mt-4">
           <v-card-title>
-            <v-icon class="mr-2">mdi-format-color-fill</v-icon>
+            <v-icon class="mr-2">
+              mdi-format-color-fill
+            </v-icon>
             Current Theme Colors
           </v-card-title>
           <v-card-text>
             <v-row dense>
-              <v-col v-for="(value, name) in colors" :key="name" cols="6" sm="4">
+              <v-col
+                v-for="(value, name) in colors"
+                :key="name"
+                cols="6"
+                sm="4"
+              >
                 <div class="d-flex align-center">
                   <div
-                      class="rounded mr-2"
-                      :style="{ backgroundColor: value, width: '24px', height: '24px', border: '1px solid rgba(0,0,0,0.1)' }"
+                    class="rounded mr-2"
+                    :style="{ backgroundColor: value, width: '24px', height: '24px', border: '1px solid rgba(0,0,0,0.1)' }"
                   />
                   <div>
-                    <div class="text-caption font-weight-medium">{{ name }}</div>
-                    <div class="text-caption text-medium-emphasis">{{ value }}</div>
+                    <div class="text-caption font-weight-medium">
+                      {{ name }}
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      {{ value }}
+                    </div>
                   </div>
                 </div>
               </v-col>
@@ -108,33 +131,79 @@ const presetsList = Object.keys(presets)
       </v-col>
 
       <!-- Component Defaults -->
-      <v-col cols="12" lg="6">
+      <v-col
+        cols="12"
+        lg="6"
+      >
         <v-card>
           <v-card-title>
-            <v-icon class="mr-2">mdi-tune</v-icon>
+            <v-icon class="mr-2">
+              mdi-tune
+            </v-icon>
             Component Defaults
           </v-card-title>
           <v-card-text>
-            <v-select v-model="buttonRounded" label="Button Rounded" :items="roundedOptions" item-title="title" item-value="value" />
-            <v-select v-model="cardRounded" label="Card Rounded" :items="roundedOptions" item-title="title" item-value="value" />
-            <v-select v-model="inputVariant" label="Input Variant" :items="variantOptions" item-title="title" item-value="value" />
-            <v-select v-model="inputDensity" label="Input Density" :items="densityOptions" item-title="title" item-value="value" />
+            <v-select
+              v-model="buttonRounded"
+              label="Button Rounded"
+              :items="roundedOptions"
+              item-title="title"
+              item-value="value"
+            />
+            <v-select
+              v-model="cardRounded"
+              label="Card Rounded"
+              :items="roundedOptions"
+              item-title="title"
+              item-value="value"
+            />
+            <v-select
+              v-model="inputVariant"
+              label="Input Variant"
+              :items="variantOptions"
+              item-title="title"
+              item-value="value"
+            />
+            <v-select
+              v-model="inputDensity"
+              label="Input Density"
+              :items="densityOptions"
+              item-title="title"
+              item-value="value"
+            />
 
             <div class="d-flex gap-2 mt-4">
-              <v-btn color="primary" @click="applyCustomizations">Apply Changes</v-btn>
-              <v-btn variant="outlined" @click="resetAllDefaults">Reset All</v-btn>
+              <v-btn
+                color="primary"
+                @click="applyCustomizations"
+              >
+                Apply Changes
+              </v-btn>
+              <v-btn
+                variant="outlined"
+                @click="resetAllDefaults"
+              >
+                Reset All
+              </v-btn>
             </div>
           </v-card-text>
         </v-card>
 
         <v-card class="mt-4">
           <v-card-title>
-            <v-icon class="mr-2">mdi-lightning-bolt</v-icon>
+            <v-icon class="mr-2">
+              mdi-lightning-bolt
+            </v-icon>
             Quick Presets
           </v-card-title>
           <v-card-text>
             <div class="d-flex flex-wrap gap-2">
-              <v-btn v-for="preset in presetsList" :key="preset" variant="tonal" @click="applyPreset(preset as any)">
+              <v-btn
+                v-for="preset in presetsList"
+                :key="preset"
+                variant="tonal"
+                @click="applyPreset(preset as any)"
+              >
                 {{ preset }}
               </v-btn>
             </div>
@@ -143,15 +212,25 @@ const presetsList = Object.keys(presets)
 
         <v-card class="mt-4">
           <v-card-title>
-            <v-icon class="mr-2">mdi-eye</v-icon>
+            <v-icon class="mr-2">
+              mdi-eye
+            </v-icon>
             Preview
           </v-card-title>
           <v-card-text>
             <v-text-field label="Sample Text Field" />
-            <v-select label="Sample Select" :items="['Option 1', 'Option 2']" class="mt-4" />
+            <v-select
+              label="Sample Select"
+              :items="['Option 1', 'Option 2']"
+              class="mt-4"
+            />
             <div class="d-flex gap-2 mt-4">
-              <v-btn color="primary">Primary Button</v-btn>
-              <v-btn color="secondary">Secondary Button</v-btn>
+              <v-btn color="primary">
+                Primary Button
+              </v-btn>
+              <v-btn color="secondary">
+                Secondary Button
+              </v-btn>
             </div>
           </v-card-text>
         </v-card>
@@ -162,7 +241,9 @@ const presetsList = Object.keys(presets)
       <v-col cols="12">
         <v-card>
           <v-card-title>
-            <v-icon class="mr-2">mdi-code-json</v-icon>
+            <v-icon class="mr-2">
+              mdi-code-json
+            </v-icon>
             Current Defaults Configuration
           </v-card-title>
           <v-card-text>

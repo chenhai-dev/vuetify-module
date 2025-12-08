@@ -54,15 +54,15 @@ provide('scoped-theme', appliedTheme)
 
 <template>
   <VuetifyThemeProvider
-      :theme="appliedTheme"
-      :root="root"
-      :tag="tag"
-      :with-background="withBackground"
+    :theme="appliedTheme"
+    :root="root"
+    :tag="tag"
+    :with-background="withBackground"
   >
     <slot
-        :theme="appliedTheme"
-        :is-dark="isDark"
-        :available-themes="availableThemes"
+      :theme="appliedTheme"
+      :is-dark="isDark"
+      :available-themes="availableThemes"
     />
   </VuetifyThemeProvider>
 </template>
