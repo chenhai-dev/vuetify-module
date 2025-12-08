@@ -3,13 +3,14 @@ import {
   addPlugin,
   createResolver,
   extendViteConfig,
-  addImportsDir, addVitePlugin, addTemplate, useLogger, addComponentsDir,
+  addImportsDir, addVitePlugin, addTemplate, useLogger, addComponentsDir, addImports,
 } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import { defu } from 'defu'
-import type { ModuleOptions, VuetifyOptions, VuetifyRuntimeConfig } from './types'
-import { generateVuetifyConfigTemplate, addIconStyles } from './utils'
+import type { ModuleOptions, VuetifyOptions } from './types'
+import { addIconStyles } from './utils'
+import { generateVuetifyConfigTemplate, setVuetifyRuntimeConfig } from './utils/module'
 
 // Re-export types
 export type { ModuleOptions } from './types'
@@ -202,7 +203,6 @@ export default defineNuxtModule<ModuleOptions>({
     styles: true,
     disableVuetifyStyles: false,
     // automatic tree-shaking Vuetify components and directives, also include labs or Ignoring components or directives
-    // autoImport: true,
     autoImport: {
       labs: true,
     },
@@ -210,6 +210,18 @@ export default defineNuxtModule<ModuleOptions>({
     importComposables: true,
     prefixComposables: true,
     transformAssetUrls: true,
+
+    // Theme persistence
+    themePersistence: {
+      enabled: true,
+      storage: 'cookie',
+      key: 'nuxt-vuetify-theme',
+      cookieOptions: {
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+        path: '/',
+      },
+    },
+
     // Performance
     prefetch: true,
     preload: true,
@@ -223,13 +235,6 @@ export default defineNuxtModule<ModuleOptions>({
 
     logger.info('Starting Vuetify module setup...')
 
-    // Validate options
-    if (options.autoImport && typeof options.autoImport === 'object') {
-      if (options.autoImport.labs && !options.autoImport.labs) {
-        logger.warn('Labs components enabled but vite-plugin-vuetify may need explicit configuration')
-      }
-    }
-
     // Validate icon set
     const validIconSets = ['mdi', 'mdi-svg', 'fa', 'fa-svg', 'md']
     const iconSet = options.vuetifyOptions?.icons?.defaultSet
@@ -240,18 +245,7 @@ export default defineNuxtModule<ModuleOptions>({
     /* -----------------------------------------------
      * Runtime Configuration
      * --------------------------------------------- */
-    const runtimeConfig: VuetifyRuntimeConfig = {
-      aliases: options.vuetifyOptions.aliases!,
-      defaults: options.vuetifyOptions.defaults!,
-      theme: options.vuetifyOptions.theme!,
-      icons: options.vuetifyOptions.icons!,
-      locale: options.vuetifyOptions.locale!,
-      ssr: options.vuetifyOptions.ssr!,
-    }
-    nuxt.options.runtimeConfig.public.vuetify = defu(
-      nuxt.options.runtimeConfig.public.vuetify || {},
-      runtimeConfig,
-    )
+    setVuetifyRuntimeConfig(options, nuxt, logger)
 
     // Generate Vuetify configuration template
     addTemplate({
@@ -293,27 +287,6 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.options.build.transpile.push('vuetify')
     nuxt.options.build.transpile.push(resolver.resolve('./runtime'))
 
-    // Add date adapter if specified
-    if (options.dateAdapter) {
-      nuxt.options.build.transpile.push('vuetify/lib')
-
-      // Add date adapter imports based on selection
-      // if (typeof options.dateAdapter === 'string') {
-      //   const adapterMap = {
-      //     'date-fns': '@date-io/date-fns',
-      //     'moment': '@date-io/moment',
-      //     'luxon': '@date-io/luxon',
-      //     'dayjs': '@date-io/dayjs',
-      //     'js-joda': '@date-io/js-joda',
-      //   }
-      //   const adapterPackage = adapterMap[options.dateAdapter]
-      //   if (adapterPackage) {
-      //     logger.info(`Using date adapter: ${options.dateAdapter}`)
-      //     runtimeConfig.dateAdapter = options.dateAdapter
-      //   }
-      // }
-    }
-
     /* -----------------------------------------------
      * Nuxt - Vuetify transformAssetUrls
      * --------------------------------------------- */
@@ -343,7 +316,12 @@ export default defineNuxtModule<ModuleOptions>({
     /* -----------------------------------------------
      * Auto Composables Import
      * --------------------------------------------- */
-    addImportsDir(resolver.resolve('runtime/composables'))
+    // addImportsDir(resolver.resolve('runtime/composables'))
+    addImports({
+      name: 'useVuetify',
+      as: 'useVuetify',
+      from: resolver.resolve('runtime/composables'),
+    })
     if (options.importComposables) {
       // Add Vuetify composables directly
       nuxt.hook('imports:extend', (imports) => {

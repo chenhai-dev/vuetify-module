@@ -1,7 +1,6 @@
 export { useAppTheme } from './useTheme'
 export { useVTheme } from './useVTheme'
 export { useVDefaults } from './useVDefaults'
-export { useVuetify } from './useVuetify'
 export { useSnackbar } from './useSnackbar'
 export { useConfirmDialog } from './useConfirmDialog'
 export { useLoading } from './useLoading'

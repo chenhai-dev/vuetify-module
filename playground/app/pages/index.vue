@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useVTheme } from '../../../src/runtime/composables'
+
 const { isDark, colors } = useVTheme()
 
 const features = [

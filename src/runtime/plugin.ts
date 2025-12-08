@@ -1,7 +1,7 @@
 import { defineNuxtPlugin, useRuntimeConfig } from '#app'
 import { createVuetify, type VuetifyOptions as VOptions } from 'vuetify'
-import type { VuetifyOptions } from '../types'
-import { setIcon, setBlueprints, setLocaleOptions, setDateAdapter } from '../utils'
+import type { VuetifyOptions, VuetifyRuntimeConfig } from '../types'
+import { setIcon, loadBlueprint, setLocaleOptions, setDateAdapter, getBlueprintDefaults } from '../utils'
 
 export default defineNuxtPlugin({
   name: 'vuetify:nuxt:plugin',
@@ -9,27 +9,28 @@ export default defineNuxtPlugin({
   enforce: 'pre', // Load before other plugins
   async setup(nuxtApp) {
     const runtimeConfig = useRuntimeConfig()
-    const options: VuetifyOptions = runtimeConfig.public.vuetify as Partial<VuetifyOptions>
+    const options: VuetifyRuntimeConfig = runtimeConfig.public.vuetify as Partial<VuetifyRuntimeConfig>
 
     const icons = setIcon(options)
 
-    const blueprint = setBlueprints(options)
+    const blueprint = await loadBlueprint(options.blueprint || 'md3') ?? getBlueprintDefaults('md3')
     const locale = setLocaleOptions(options)
+    const adapter = setDateAdapter(options.dateAdapter ?? 'vuetify')
 
+    // Resolved Option
     const resolvedOption: VuetifyOptions | VOptions = {
       ...options,
-      date: setDateAdapter(options),
       icons: icons,
       locale: locale,
+      date: {
+        ...options.date,
+        ...adapter,
+      },
     }
 
+    // Vuetify Option Configuration
     const vuetifyOptions: VuetifyOptions = {
       ...resolvedOption,
-    }
-    const option: VOptions = {
-      ...resolvedOption,
-
-      blueprint: blueprint,
     }
 
     /* -----------------------------------------------
@@ -47,7 +48,10 @@ export default defineNuxtPlugin({
     /* -----------------------------------------------
      * Create Vuetify instance with Nuxt 4 SSR support
      * --------------------------------------------- */
-    const vuetify = createVuetify(option)
+    const vuetify = createVuetify({
+      ...resolvedOption,
+      blueprint: blueprint,
+    })
 
     /* -----------------------------------------------
      * Provide Vuetify to the Vue app

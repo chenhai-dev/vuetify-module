@@ -42,6 +42,18 @@ export function useConfirmDialog() {
     })
   }
 
+  const handleConfirm = () => {
+    state.value.visible = false
+    resolvePromise?.(true)
+    resolvePromise = null
+  }
+
+  const handleCancel = () => {
+    state.value.visible = false
+    resolvePromise?.(false)
+    resolvePromise = null
+  }
+
   /**
    * Handle confirm action
    */
@@ -116,5 +128,7 @@ export function useConfirmDialog() {
     confirmDelete,
     confirmDiscard,
     confirmLogout,
+    handleConfirm,
+    handleCancel,
   }
 }

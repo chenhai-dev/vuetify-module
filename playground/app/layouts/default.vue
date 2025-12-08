@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { useVDefaults, useVTheme } from '../../../src/runtime/composables'
 
 const { global, isDark, toggle, availableThemes, setTheme } = useVTheme()
 const { applyPreset, resetAllDefaults } = useVDefaults()

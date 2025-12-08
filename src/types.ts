@@ -7,6 +7,43 @@ import type * as Components from 'vuetify/components'
 import type * as Directives from 'vuetify/directives'
 
 /**
+ * Theme persistence configuration
+ */
+export interface ThemePersistenceOptions {
+  /**
+   * Enable theme persistence
+   * @default true
+   */
+  enabled?: boolean
+
+  /**
+   * Storage key for theme
+   * @default 'nuxt-vuetify-theme'
+   */
+  key?: string
+
+  /**
+   * Storage type
+   * @default 'cookie'
+   */
+  storage?: 'cookie' | 'localStorage' | 'sessionStorage'
+
+  /**
+   * Cookie options (when storage is 'cookie')
+   */
+  cookieOptions?: {
+    maxAge?: number // in seconds, default: 365 days
+    path?: string
+    sameSite?: 'strict' | 'lax' | 'none'
+  }
+}
+
+export interface AutoImportOptions {
+  labs?: boolean
+  ignore?: (keyof typeof Components | keyof typeof Directives)[]
+}
+
+/**
  * Module-level configuration options for Nuxt Vuetify Module
  *
  * @example
@@ -47,16 +84,20 @@ export interface VuetifyModuleOptions {
   disableVuetifyStyles?: boolean
 
   /**
+   * Date adapter configuration for date pickers
+   * Options: 'vuetify' (built-in), 'date-fns', 'moment', 'luxon', 'dayjs', 'js-joda'
+   * @default 'vuetify'
+   */
+  dateAdapter?: 'vuetify' | 'date-fns' | 'moment' | 'luxon' | 'dayjs' | 'js-joda' | 'custom'
+
+  /**
    * Enable automatic tree-shaking via vite-plugin-vuetify
    * Vuetify components and directives will be automatically imported
    * include lab when autoImport:{labs:true}
    * Ignoring components or directives: autoImport:{ignore:[Component name and Directive name here]}
    * @default true
    */
-  autoImport?: boolean | {
-    labs?: boolean
-    ignore?: (keyof typeof Components | keyof typeof Directives)[]
-  }
+  autoImport?: boolean | AutoImportOptions
 
   /**
    * Auto-import Vuetify composables
@@ -83,6 +124,12 @@ export interface VuetifyModuleOptions {
    * @default true
    */
   transformAssetUrls?: boolean
+
+  /**
+   * Theme persistence configuration
+   * @default { enabled: true, storage: 'cookie', key: 'nuxt-vuetify-theme' }
+   */
+  themePersistence?: ThemePersistenceOptions
 
   /**
    * Prefetch Vuetify chunks for faster navigation
@@ -125,13 +172,16 @@ export interface VuetifyOptions extends Partial<Omit<VOptions, 'aliases' | 'them
  */
 export interface VuetifyRuntimeConfig {
   aliases?: Exclude<VuetifyOptions['aliases'], undefined>
+  blueprint?: Exclude<VuetifyOptions['blueprint'], undefined>
   date?: Exclude<VuetifyOptions['date'], undefined>
+  dateAdapter?: Exclude<ModuleOptions['dateAdapter'], undefined>
   defaults?: Exclude<VuetifyOptions['defaults'], undefined>
   display?: Exclude<VuetifyOptions['display'], undefined>
   theme?: Exclude<VuetifyOptions['theme'], undefined>
   icons?: Omit<Exclude<VuetifyOptions['icons'], undefined>, 'aliases' | 'sets'>
   locale?: Exclude<VuetifyOptions['locale'], undefined>
   ssr?: Exclude<VuetifyOptions['ssr'], undefined>
+  themePersistence?: Exclude<ModuleOptions['themePersistence'], undefined>
 }
 
 /**
@@ -139,15 +189,6 @@ export interface VuetifyRuntimeConfig {
  */
 export interface ModuleOptions extends VuetifyModuleOptions {
   vuetifyOptions: VuetifyOptions
-  /**
-   * Date adapter configuration for date pickers
-   * Options: 'vuetify' (built-in), 'date-fns', 'moment', 'luxon', 'dayjs', 'js-joda'
-   * @default undefined
-   */
-  dateAdapter?: 'vuetify' | 'date-fns' | 'moment' | 'luxon' | 'dayjs' | 'js-joda' | {
-    adapter: unknown
-    locale?: unknown
-  }
 }
 export interface ModulePublicRuntimeConfig {
   vuetify: Partial<VuetifyRuntimeConfig>
@@ -159,9 +200,9 @@ export interface ModuleHooks {
 }
 
 export interface ModuleRuntimeHooks {
-  'vuetify:before-create': (ctx: { vuetifyOptions: VuetifyOptions }) => HookResult
-  'vuetify:configuration': (ctx: { vuetifyOptions: VuetifyOptions }) => HookResult
-  'vuetify:ready': (vuetify: ReturnType<typeof createVuetify>) => HookResult
+  'vuetify:before-create': (ctx: { vuetifyOptions: VuetifyOptions }) => HookResult // Before Vuetify instance creation
+  'vuetify:configuration': (ctx: { vuetifyOptions: VuetifyOptions }) => HookResult // After configuration
+  'vuetify:ready': (vuetify: ReturnType<typeof createVuetify>) => HookResult // Vuetify is ready and installed
 }
 // Used by module for type inference
 declare module '#app' {
