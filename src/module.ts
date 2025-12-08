@@ -9,9 +9,7 @@ import type { Nuxt } from '@nuxt/schema'
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import { defu } from 'defu'
 import type { ModuleOptions, VuetifyOptions, VuetifyRuntimeConfig } from './types'
-import { generateVuetifyConfigTemplate } from './utils'
-import { addIconStyles } from './utils/icon'
-import { en } from 'vuetify/locale'
+import { generateVuetifyConfigTemplate, addIconStyles } from './utils'
 
 // Re-export types
 export type { ModuleOptions } from './types'
@@ -370,7 +368,7 @@ export default defineNuxtModule<ModuleOptions>({
     extendViteConfig((config) => {
       // Optimize
       // config.optimizeDeps = defu(config.optimizeDeps, { exclude: ['vuetify'] })
-      config.optimizeDeps = defu(config.optimizeDeps, { includes: ['vuetify'] })
+      config.optimizeDeps = defu(config.optimizeDeps, { include: ['vuetify'] })
 
       // Prevent externalizing Vuetify for SSR/build
       if (options.vuetifyOptions?.ssr) {
@@ -393,12 +391,8 @@ export default defineNuxtModule<ModuleOptions>({
     if (options.autoImport) {
       addVitePlugin(vuetify({
         autoImport: options.autoImport,
-        styles: typeof options.styles === 'object' && options.styles?.configFile
-          ? { configFile: options.styles.configFile }
-          : (options.styles || true),
-      }), {
-        prepend: true,
-      })
+        styles: options.styles || true,
+      }), { prepend: true })
     }
 
     // Nitro config

@@ -4,11 +4,10 @@ export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
 
-  // ─────────────────────────────────────────────────────────────
-  // ADDITIONAL NUXT OPTIMIZATIONS FOR FAST LOADING
-  // ─────────────────────────────────────────────────────────────
+  css: [
+    '~/assets/scss/vuetify-overrides.scss',
+  ],
 
-  // Enable experimental features for better performance
   experimental: {
     // Payload extraction for faster hydration
     payloadExtraction: true,
@@ -104,9 +103,7 @@ export default defineNuxtConfig({
       // SSR configuration
       ssr: true,
     },
-    styles: {
-      configFile: 'assets/scss/vuetify-settings.scss',
-    },
+    styles: true,
     autoImport: true,
     importComposables: true,
     prefetch: true,

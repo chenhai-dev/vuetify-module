@@ -1,8 +1,9 @@
-import type { ModuleOptions } from '../module'
+import type { ModuleOptions } from '../types'
 
-/**
- * Add icon CSS based on icon configuration
- */
+export * from '../utils/icon'
+export * from '../utils/blueprints'
+export * from '../utils/locale'
+export * from '../utils/date'
 
 /**
  * Generate Vuetify config template for virtual module

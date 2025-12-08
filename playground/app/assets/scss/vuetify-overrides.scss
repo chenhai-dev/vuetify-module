@@ -1,0 +1,78 @@
+/**
+ * Vuetify 3 Customization via CSS Custom Properties
+ * This is the recommended approach for Vuetify 3
+ */
+
+:root {
+  /* ===== Typography ===== */
+  --v-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* ===== Border Radius ===== */
+  --v-border-radius-xs: 2px;
+  --v-border-radius-sm: 4px;
+  --v-border-radius-md: 6px;
+  --v-border-radius-lg: 8px;
+  --v-border-radius-xl: 12px;
+
+  /* ===== Component Specific ===== */
+  --v-btn-height: 40px;
+  --v-btn-border-radius: 8px;
+  --v-card-border-radius: 12px;
+  --v-dialog-border-radius: 16px;
+  --v-field-border-radius: 8px;
+
+  /* ===== Spacing ===== */
+  --v-layout-spacing: 16px;
+
+  /* ===== Shadows ===== */
+  --v-shadow-key-umbra-opacity: 0.2;
+  --v-shadow-key-penumbra-opacity: 0.14;
+}
+
+/* ===== Font Family Override ===== */
+body,
+.v-application {
+  font-family: var(--v-font-family);
+}
+
+/* ===== Component Customizations ===== */
+.v-btn {
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-weight: 500;
+  border-radius: var(--v-btn-border-radius) !important;
+}
+
+.v-card {
+  border-radius: var(--v-card-border-radius) !important;
+}
+
+.v-dialog > .v-overlay__content > .v-card,
+.v-dialog > .v-overlay__content > .v-sheet {
+  border-radius: var(--v-dialog-border-radius) !important;
+}
+
+.v-field {
+  border-radius: var(--v-field-border-radius) !important;
+}
+
+.v-field__outline {
+  border-radius: var(--v-field-border-radius) !important;
+}
+
+/* ===== Input Field Customization ===== */
+.v-text-field input,
+.v-textarea textarea,
+.v-select input {
+  font-size: 16px;
+}
+
+/* ===== Smooth Transitions ===== */
+.v-card,
+.v-btn {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.v-card:hover {
+  transform: translateY(-2px);
+}

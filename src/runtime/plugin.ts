@@ -1,10 +1,7 @@
 import { defineNuxtPlugin, useRuntimeConfig } from '#app'
 import { createVuetify, type VuetifyOptions as VOptions } from 'vuetify'
-import { VuetifyDateAdapter } from 'vuetify/date/adapters/vuetify'
 import type { VuetifyOptions } from '../types'
-import { setIcon } from '../utils/icon'
-import { setBlueprints } from '../utils/blueprints'
-import { setLocaleOptions } from '~/src/utils/locale'
+import { setIcon, setBlueprints, setLocaleOptions, setDateAdapter } from '../utils'
 
 export default defineNuxtPlugin({
   name: 'vuetify:nuxt:plugin',
@@ -21,12 +18,7 @@ export default defineNuxtPlugin({
 
     const resolvedOption: VuetifyOptions | VOptions = {
       ...options,
-      date: options.date || {
-        adapter: VuetifyDateAdapter,
-        formats: {
-          weekdayNarrow: { weekday: 'narrow' },
-        },
-      },
+      date: setDateAdapter(options),
       icons: icons,
       locale: locale,
     }

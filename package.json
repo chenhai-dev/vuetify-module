@@ -1,5 +1,5 @@
 {
-  "name": "vutify-module",
+  "name": "vuetify-module",
   "version": "1.0.0",
   "description": "Nuxt 4 module for Vuetify with theming and performance optimizations",
   "repository": "https://github.com/chenhai-dev/vuetify-module",
@@ -50,6 +50,7 @@
     "changelogen": "^0.6.2",
     "eslint": "^9.39.1",
     "nuxt": "^4.2.1",
+    "sass-embedded": "^1.93.3",
     "typescript": "~5.9.3",
     "vitest": "^4.0.15",
     "vue-tsc": "^3.1.5"
