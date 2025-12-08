@@ -1,12 +1,9 @@
 <template>
-  <v-app>
-    <v-main>
-      <v-container>
-        <h1>Test Fixture - Nuxt 4</h1>
-        <NuxtPage />
-      </v-container>
-    </v-main>
-  </v-app>
+  <NuxtLoadingIndicator />
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
+  <div>Nuxt module playground!</div>
 </template>
 
 <script setup></script>

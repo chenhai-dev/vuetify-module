@@ -190,13 +190,6 @@ declare module '@nuxt/schema' {
   }
 }
 
-// Augment #app types
-declare module 'vue' {
-  export interface ComponentCustomProperties {
-    $vuetify: Vuetify
-  }
-}
-
 /**
  * Snackbar options for show() method
  */

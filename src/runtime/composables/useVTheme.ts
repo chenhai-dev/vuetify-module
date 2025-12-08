@@ -1,5 +1,6 @@
 import { computed, type ComputedRef, onMounted, type Ref } from 'vue'
 import { type ThemeDefinition, type ThemeInstance, useTheme } from 'vuetify'
+import { useCookie, useRuntimeConfig } from '#app'
 
 export interface UseVThemeOptions {
   /**
@@ -45,7 +46,7 @@ export function useVTheme(options: UseVThemeOptions = {}): UseVTheme {
 
   // Cookie for persistence
   const themeCookie = useCookie<string>(cookieName, {
-    default: () => config.defaultTheme || 'light',
+    default: () => config.theme?.defaultTheme || 'light',
   })
 
   // ===== Exposed from Vuetify useTheme =====

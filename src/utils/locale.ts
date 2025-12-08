@@ -16,6 +16,7 @@ const setLocaleOptions = (options: VuetifyOptions) => {
     locale: options.locale?.locale || 'en',
     fallback: options.locale?.fallback || 'en',
     messages: localeMessages,
+    rtl: options.locale?.rtl || {},
   }
 }
 export {
