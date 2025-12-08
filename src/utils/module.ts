@@ -2,7 +2,7 @@ import type { ModuleOptions, VuetifyRuntimeConfig } from '../types'
 import type { Nuxt } from '@nuxt/schema'
 import type * as consola from 'consola'
 import { defu } from 'defu'
-import { dateAdapters } from '../utils'
+import { loadDateAdapter } from '../utils'
 
 /**
  * Generate Vuetify config template for virtual module
@@ -29,15 +29,21 @@ export function setVuetifyRuntimeConfig(options: ModuleOptions, nuxt: Nuxt, logg
     ssr: options.vuetifyOptions.ssr!,
     themePersistence: options.themePersistence!,
   }
+  /* -----------------------------------------------
+  * Blueprint Support
+  * --------------------------------------------- */
   if (options.vuetifyOptions?.blueprint) {
     const blueprintName = options.vuetifyOptions.blueprint
     logger.info(`Using Material Design blueprint: ${blueprintName}`)
     runtimeConfig.blueprint = blueprintName
   }
+  /* -----------------------------------------------
+  * Data Adapter Support
+  * --------------------------------------------- */
   if (options.dateAdapter) {
     nuxt.options.build.transpile.push('vuetify/lib')
-    const adapterPackage = dateAdapters[options.dateAdapter]
-    if (adapterPackage) {
+    const adapterPackage = loadDateAdapter(options.dateAdapter)
+    if (adapterPackage !== undefined) {
       logger.info(`Using date adapter: ${options.dateAdapter}`)
       // Pass to runtime config for plugin to use
       runtimeConfig.dateAdapter = options.dateAdapter

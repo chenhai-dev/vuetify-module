@@ -1,7 +1,8 @@
 import { defineNuxtPlugin, useRuntimeConfig } from '#app'
 import { createVuetify, type VuetifyOptions as VOptions } from 'vuetify'
 import type { VuetifyOptions, VuetifyRuntimeConfig } from '../types'
-import { setIcon, loadBlueprint, setLocaleOptions, setDateAdapter, getBlueprintDefaults } from '../utils'
+import { setIcon, loadBlueprint, setLocaleOptions, getDateAdapter, getBlueprintDefaults } from '../utils'
+import { defu } from 'defu'
 
 export default defineNuxtPlugin({
   name: 'vuetify:nuxt:plugin',
@@ -15,22 +16,23 @@ export default defineNuxtPlugin({
 
     const blueprint = await loadBlueprint(options.blueprint || 'md3') ?? getBlueprintDefaults('md3')
     const locale = setLocaleOptions(options)
-    const adapter = setDateAdapter(options.dateAdapter ?? 'vuetify')
+    const adapter = await getDateAdapter(options.dateAdapter ?? 'vuetify')
+    const date = {
+      ...options.date,
+      ...adapter,
+    }
 
     // Resolved Option
     const resolvedOption: VuetifyOptions | VOptions = {
       ...options,
       icons: icons,
       locale: locale,
-      date: {
-        ...options.date,
-        ...adapter,
-      },
     }
 
     // Vuetify Option Configuration
     const vuetifyOptions: VuetifyOptions = {
       ...resolvedOption,
+      date: date,
     }
 
     /* -----------------------------------------------

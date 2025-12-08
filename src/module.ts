@@ -2,15 +2,13 @@ import {
   defineNuxtModule,
   addPlugin,
   createResolver,
-  extendViteConfig,
-  addImportsDir, addVitePlugin, addTemplate, useLogger, addComponentsDir, addImports,
+  extendViteConfig, addVitePlugin, addTemplate, useLogger, addComponentsDir, addImports,
 } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import { defu } from 'defu'
 import type { ModuleOptions, VuetifyOptions } from './types'
-import { addIconStyles } from './utils'
-import { generateVuetifyConfigTemplate, setVuetifyRuntimeConfig } from './utils/module'
+import { addIconStyles, generateVuetifyConfigTemplate, setVuetifyRuntimeConfig } from './utils'
 
 // Re-export types
 export type { ModuleOptions } from './types'
@@ -234,13 +232,6 @@ export default defineNuxtModule<ModuleOptions>({
     const startTime = Date.now()
 
     logger.info('Starting Vuetify module setup...')
-
-    // Validate icon set
-    const validIconSets = ['mdi', 'mdi-svg', 'fa', 'fa-svg', 'md']
-    const iconSet = options.vuetifyOptions?.icons?.defaultSet
-    if (iconSet && !validIconSets.includes(iconSet)) {
-      logger.warn(`Unknown icon set: ${iconSet}. Valid options: ${validIconSets.join(', ')}`)
-    }
 
     /* -----------------------------------------------
      * Runtime Configuration

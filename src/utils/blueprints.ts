@@ -1,11 +1,7 @@
 import type { Blueprint } from 'vuetify'
-import type { VuetifyOptions } from '../types'
 
 export type BlueprintName = 'md1' | 'md2' | 'md3'
 
-export const setBlueprints = (options: VuetifyOptions) => {
-  return loadBlueprint(options.blueprint || 'md3')
-}
 export async function loadBlueprint(name: BlueprintName): Promise<Blueprint> {
   try {
     const blueprints = await import('vuetify/blueprints')
